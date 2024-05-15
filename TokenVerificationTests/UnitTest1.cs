@@ -12,14 +12,11 @@ namespace TokenVerificationTests
         [TestMethod]
         public void GenerateKeyPairTest()
         {
-            AuthorizationToken token = new(Guid.NewGuid(), DateTime.UtcNow);
-            //string tokenAsString = JsonConvert.SerializeObject(token);
-            (byte[], byte[]) keypair = TokenVerification.CreateKeyPair();
-            //byte[] signature = TokenVerification.SignData(tokenAsString, keypair.Item2);
-            string tokenString = TokenVerification.GetTokenString(token, keypair.Item2);
-            Console.WriteLine(tokenString);
-            Console.WriteLine(TokenVerification.ValidateToken(tokenString, keypair.Item1));
-            Console.WriteLine(Encoding.UTF8.GetString(Convert.FromBase64String(tokenString)));
+            TokenVerification.Initialize();
+            AuthorizationToken token = new AuthorizationToken(Guid.NewGuid(), DateTime.UtcNow);
+            string tokenString = TokenVerification.GetTokenString(token);
+            bool valid = TokenVerification.ValidateToken(tokenString);
+            Console.WriteLine(valid);
         }
     }
 }
