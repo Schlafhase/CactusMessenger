@@ -27,14 +27,14 @@ namespace BlazorApp1.Components.Pages
 			// *** !!! This is where you would validate the user !!! ***
 			// In this example we just log the user in
 			// (Always log the user in for this demo)
-			var claims = new List<Claim>
+			List<Claim> claims = new List<Claim>
 			{
 				new Claim(ClaimTypes.Name, paramUsername),
 				new Claim(ClaimTypes.Role, "Administrator"),
 			};
-			var claimsIdentity = new ClaimsIdentity(
+			ClaimsIdentity claimsIdentity = new ClaimsIdentity(
 				claims, CookieAuthenticationDefaults.AuthenticationScheme);
-			var authProperties = new AuthenticationProperties
+			AuthenticationProperties authProperties = new AuthenticationProperties
 			{
 				IsPersistent = true,
 				RedirectUri = this.Request.Host.Value
