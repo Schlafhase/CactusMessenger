@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "outdated files", "outdated files\outdated files.csproj", "{DBBAC79D-DB99-4FBA-B0CB-63161E40692F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacToe", "TicTacToe\TicTacToe.csproj", "{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService", "EmailService\EmailService.csproj", "{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{DBBAC79D-DB99-4FBA-B0CB-63161E40692F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBBAC79D-DB99-4FBA-B0CB-63161E40692F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBBAC79D-DB99-4FBA-B0CB-63161E40692F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
