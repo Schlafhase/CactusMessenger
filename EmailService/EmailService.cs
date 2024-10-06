@@ -19,11 +19,16 @@ namespace EmailService
 
 		public void Send(string receiver, string subject, string body)
 		{
+			Send([receiver], subject, body);
+		}
+
+		public void Send(string[] receivers, string subject, string body)
+		{
 			MailAddress from = new MailAddress("linus.schneeberg@schlafhase.uk", "Cactus Messenger");
-			MailAddress to = new MailAddress(receiver);
-			using (MailMessage mail = new(from, to)
+			using (MailMessage mail = new()
 			{
 				// set subject and encoding
+				From = from,
 				Subject = subject,
 				SubjectEncoding = System.Text.Encoding.UTF8,
 
@@ -34,6 +39,12 @@ namespace EmailService
 				IsBodyHtml = true
 			})
 			{
+				//add recipients
+				foreach (string receiver in receivers)
+				{
+					mail.To.Add(receiver);
+				}
+
 				smtpClient.Send(mail);
 			}
 		}
