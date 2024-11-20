@@ -86,7 +86,7 @@ public class EmailService
 	public static string GenerateAccountReviewEmail(bool accepted)
 	{
 		string body =
-			$"<span>Your account creation request was reviewed and {(accepted ? "accepted" : "denied")} by an administrator.</span><div style='padding-top:25px;'><a style='color: white; text-decoration: none; padding: 5px 10px;background-color: blue; border-radius: 10px;' href='{(accepted ? "https://messenger.schlafhase.uk" : "https://schlafhase.uk#contact")}'>{(accepted ? "Sign in" : "Contact me")}</a><span style='padding-left: 15px;line-height:25px;font-size:12px; font-style:italic;color:gray;'>{(accepted ? "" : "if you think this was choice unfair.")}</span></div>";
+			$"<span>Your account creation request was reviewed and {(accepted ? "accepted" : "denied")} by an administrator.</span><div style='padding-top:25px;'><a style='color: white; text-decoration: none; padding: 5px 10px;background-color: blue; border-radius: 10px;' href='{(accepted ? "https://messenger.schlafhase.uk" : "https://schlafhase.uk#contact")}'>{(accepted ? "Sign in" : "Contact me")}</a><span style='padding-left: 15px;line-height:25px;font-size:12px; font-style:italic;color:gray;'>{(accepted ? "" : "if you think this choice was unfair.")}</span></div>";
 		return GenerateEmailBase($"Your account creation request has been {(accepted ? "accepted" : "denied")}.", body);
 	}
 }
