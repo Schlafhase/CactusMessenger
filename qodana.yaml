@@ -1,0 +1,85 @@
+﻿#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+version: "1.0"
+#Specify IDE code to run analysis without container (Applied in CI/CD pipeline)
+ide: QDNET
+#Specify inspection profile for code analysis
+profile:
+  name: qodana.starter
+include:
+  - name: ConvertIfStatementToReturnStatement
+  - name: ArrangeThisQualifier
+  - name: ArrangeModifiersOrder
+  - name: AutoPropertyCanBeMadeGetOnly.Global
+  - name: AutoPropertyCanBeMadeGetOnly.Local
+  - name: AsyncVoidMethod
+  - name: ClassNeverInstantiated.Global
+  - name: ConvertIfStatementToSwitchStatement
+  - name: ConvertConstructorToMemberInitializers
+  - name: ConvertToPrimaryConstructor
+  - name: ConvertToUsingDeclaration
+  - name: ConvertToLambdaExpression
+  - name: ConvertClosureToMethodGroup
+  - name: CanSimplifyDictionaryLookupWithTryGetValue
+  - name: ExtractCommonBranchingCode
+  - name: FieldCanBeMadeReadOnly.Local
+  - name: MissingAltAttributeInImgTag
+  - name: InvertIf
+  - name: JoinDeclarationAndInitializer
+  - name: TooWideLocalVariableScope
+  - name: LoopCanBeConvertedToQuery
+  - name: PublicConstructorInAbstractClass
+  - name: MemberCanBePrivate.Global
+  - name: MemberCanBeProtected.Global
+  - name: MemberCanBeMadeStatic.Local
+  - name: MergeIntoLogicalPattern
+  - name: ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+  - name: RedundantIfElseBlock
+  - name: CppRedundantElseKeyword
+  - name: RedundantToStringCallForValueType
+  - name: RedundantLambdaSignatureParentheses
+  - name: CssRedundantUnit
+  - name: RedundantStringInterpolation
+  - name: FSharpRedundantStringInterpolation
+  - name: RedundantTypeDeclarationBody
+  - name: ArrangeRedundantParentheses
+  - name: ReplaceSubstringWithRangeIndexer
+  - name: ReplaceAutoPropertyWithComputedProperty
+  - name: ReplaceWithSingleAssignment.False
+  - name: VBReplaceWithSingleAssignment.1
+  - name: ReplaceWithSingleAssignment.True
+  - name: VBReplaceWithSingleAssignment.2
+  - name: ReplaceWithSingleCallToCount
+  - name: VBReplaceWithSingleCallToCount
+  - name: CA1050
+  - name: CA1822
+  - name: CA2211
+  - name: CA1850
+  - name: RouteTemplates.ParameterConstraintCanBeSpecified
+  - name: UnusedType.Global
+  - name: UnusedMemberInSuper.Global
+  - name: UnusedMember.Global
+  - name: CssUnknownTarget
+  - name: UnusedParameter.Global
+  - name: XmlUnusedNamespaceDeclaration
+  - name: CssUnusedSymbol
+  - name: UseCollectionExpression
+  - name: UseMethodAny.0
+  - name: UseMethodAny.1
+  - name: UseMethodAny.4
+  - name: UseMethodAny.2
+  - name: UseMethodAny.3
+  - name: VBUseMethodAny.1
+  - name: VBUseMethodAny.2
+  - name: VBUseMethodAny.3
+  - name: VBUseMethodAny.4
+  - name: VBUseMethodAny.5
+  - name: EnforceIfStatementBraces
+  - name: CppEnforceIfStatementBraces
+  - name: ArrangeNamespaceBody
+  - name: ArrangeObjectCreationWhenTypeEvident
+  - name: ArrangeObjectCreationWhenTypeNotEvident
+  - name: UseRawString
+  - name: Html.AttributesQuotes
