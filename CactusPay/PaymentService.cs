@@ -10,10 +10,10 @@ using Transaction = MessengerInterfaces.Pay.Transaction;
 
 namespace CactusPay;
 
-public class PaymentService(IMessengerService accountService, CosmosClient client, AsyncLocker asyncLocker)
+public class PaymentService(
+	IRepository<PaymentManager> paymentRepo,
+	IMessengerService           messengerService)
 {
-	private readonly Container container = client.GetContainer("cactus-messenger", "cactus-messenger");
-
 	public async Task Pay(SignedToken<PaymentToken> signedToken)
 	{
 		PaymentToken token;
@@ -33,8 +33,8 @@ public class PaymentService(IMessengerService accountService, CosmosClient clien
 		Guid  transactionId = token.TransactionId;
 		float amount        = token.Amount;
 
-		Account merchant = await accountService.GetAccount(merchantId);
-		Account client   = await accountService.GetAccount(clientId);
+		Account merchant = await messengerService.GetAccount(merchantId);
+		Account client   = await messengerService.GetAccount(clientId);
 
 		if (!token.Recipients.Contains(clientId) && token.Recipients.Length != 0)
 		{
@@ -46,8 +46,6 @@ public class PaymentService(IMessengerService accountService, CosmosClient clien
 			throw new ArgumentException("Insufficient funds");
 		}
 
-		using IDisposable _ = await asyncLocker.Enter();
-
 		PaymentManager manager = await getManager();
 
 		if (!manager.OpenTransactions.TryGetValue(transactionId, out int value))
@@ -55,46 +53,31 @@ public class PaymentService(IMessengerService accountService, CosmosClient clien
 			throw new ArgumentException("Transaction expired.");
 		}
 
+		Action<PaymentManager> update;
 		if (value - 1 <= 0)
 		{
-			manager.OpenTransactions.Remove(transactionId);
+			update = m => m.OpenTransactions.Remove(transactionId);
 		}
 		else
 		{
-			manager.OpenTransactions[transactionId]--;
+			update = m => m.OpenTransactions[transactionId]--;
 		}
 
 
-		await container.ReplaceItemAsync(manager, CactusConstants.PaymentManagerId.ToString(),
-		                                 new PartitionKey(CactusConstants.PaymentManagerId.ToString()));
+		await paymentRepo.UpdateItemVoid(CactusConstants.PaymentManagerId, update);
 
-		await accountService.UpdateAccountBalance(client.Id,   client.Balance   - amount);
-		await accountService.UpdateAccountBalance(merchant.Id, merchant.Balance + amount);
+		await messengerService.UpdateAccountBalance(client.Id,   client.Balance   - amount);
+		await messengerService.UpdateAccountBalance(merchant.Id, merchant.Balance + amount);
 	}
 
 	public async Task RegisterTransaction(Transaction transaction, int uses)
 	{
-		using IDisposable _       = await asyncLocker.Enter();
-		PaymentManager    manager = await getManager();
-		manager.OpenTransactions.Add(transaction.Token.TransactionId, uses);
-		await container.ReplaceItemAsync(manager, CactusConstants.PaymentManagerId.ToString(),
-		                                 new PartitionKey(CactusConstants.PaymentManagerId.ToString()));
+		paymentRepo.UpdateItemVoid(CactusConstants.PaymentManagerId,
+		                           manager => manager.OpenTransactions.Add(transaction.Token.TransactionId, uses));
 	}
 
 	private async Task<PaymentManager> getManager()
 	{
-		IQueryable<PaymentManager> q = container.GetItemLinqQueryable<PaymentManager>()
-		                                        .Where(item => item.Id == CactusConstants.PaymentManagerId);
-		IAsyncEnumerable<PaymentManager> response = Utils.ExecuteQuery(q);
-		List<PaymentManager>             result   = await Utils.ToListAsync(response);
-
-		try
-		{
-			return result[0];
-		}
-		catch (IndexOutOfRangeException e)
-		{
-			throw new Exception("PaymentManager not found", e);
-		}
+		return await paymentRepo.GetById(CactusConstants.PaymentManagerId);
 	}
 }
