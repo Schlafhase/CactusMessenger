@@ -8,7 +8,7 @@ namespace Discord;
 public class DiscordService(string token)
 {
 	public  ulong         GuildId         { get; set; } = 1308518069554905120;
-	public  ulong         GlobalChannelId { get; set; } = 1308519282975576098;
+	public  ulong         GlobalChannelId { get; set; } = 1310326320420622488;
 	private GatewayClient _client = new(new BotToken(token));
 
 	public async Task Run()
