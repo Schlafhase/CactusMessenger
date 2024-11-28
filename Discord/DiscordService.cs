@@ -7,18 +7,18 @@ namespace Discord;
 
 public class DiscordService(string token)
 {
-	public  ulong         GuildId         { get; set; } = 1308518069554905120;
+	// ReSharper disable once MemberCanBePrivate.Global
 	public  ulong         GlobalChannelId { get; set; } = 1310326320420622488;
 	private GatewayClient _client = new(new BotToken(token));
 
 	public async Task Run()
 	{
 		_client.Log += message =>
-		              {
-			              Console.WriteLine(message);
-			              return default;
-		              };
-		
+		               {
+			               Console.WriteLine(message);
+			               return default;
+		               };
+
 		await _client.StartAsync();
 	}
 
@@ -27,7 +27,7 @@ public class DiscordService(string token)
 		MessageProperties message = createMessageFromCactusMessage<MessageProperties>(msg);
 		await _client.Rest.SendMessageAsync(GlobalChannelId, message);
 	}
-	
+
 	private static T createMessageFromCactusMessage<T>(MessageDTO_Output msg) where T : IMessageProperties, new()
 	{
 		EmbedProperties embed = new()
@@ -42,13 +42,12 @@ public class DiscordService(string token)
 			                        Description = msg.Content,
 			                        Footer = new EmbedFooterProperties
 			                                 {
-				                                 Text = "https://messenger.schlafhase.uk",
-				                                 IconUrl = "https://cactusmessenger.azurewebsites.net/Images/cactuslogo.png"
+				                                 Text = "https://messenger.schlafhase.uk"
 			                                 },
 			                        Timestamp = msg.DateTime,
-			                        Color = new Color(0x8B008B)
+			                        Color     = new Color(0x8B008B)
 		                        };
-		
+
 		return new T
 		       {
 			       Embeds = [embed]
