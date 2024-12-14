@@ -1,18 +1,19 @@
-﻿
-internal class Program
+﻿internal class Program
 {
 	private static void Main(string[] args)
 	{
-		int state = -1;
-		int player = 1;
-		bool succesfulMove = false;
-		TicTacToe ticTacToe = new TicTacToe();
+		int       state         = -1;
+		int       player        = 1;
+		bool      succesfulMove = false;
+		TicTacToe ticTacToe     = new();
+
 		while (state == -1)
 		{
 			int x;
 			int y;
 			ticTacToe.PrintGrid();
 			succesfulMove = false;
+
 			while (!succesfulMove)
 			{
 				Console.WriteLine($"Player {player}'s turn!");
@@ -30,8 +31,10 @@ internal class Program
 					Console.WriteLine(ex.Message);
 					continue;
 				}
+
 				succesfulMove = true;
 			}
+
 			player = player == 1 ? 2 : 1;
 		}
 

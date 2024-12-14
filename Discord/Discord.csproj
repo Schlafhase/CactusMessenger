@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\MessengerInterfaces\MessengerInterfaces.csproj"/>
+      <PackageReference Include="NetCord" Version="1.0.0-alpha.332" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\MessengerInterfaces\MessengerInterfaces.csproj" />
     </ItemGroup>
 
 </Project>
