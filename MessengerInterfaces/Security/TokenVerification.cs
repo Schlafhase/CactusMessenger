@@ -7,7 +7,7 @@ namespace CactusFrontEnd.Security;
 public static class TokenVerification
 {
 	private static byte[] privateKey;
-	public static  byte[] PublicKey;
+	public static byte[] PublicKey;
 
 	public static void Initialize()
 	{
@@ -25,28 +25,28 @@ public static class TokenVerification
 
 	public static (byte[], byte[]) CreateKeyPair()
 	{
-		RSA    rsa        = RSA.Create();
-		byte[] publicKey  = rsa.ExportRSAPublicKey();
+		RSA rsa = RSA.Create();
+		byte[] publicKey = rsa.ExportRSAPublicKey();
 		byte[] privateKey = rsa.ExportRSAPrivateKey();
 		return (publicKey, privateKey);
 	}
 
 	public static string GetTokenString<T>(T token) where T : IToken
 	{
-		string         tokenAsString       = JsonConvert.SerializeObject(token);
-		byte[]         signature           = signData(tokenAsString);
-		SignedToken<T> signedToken         = new(token, signature);
-		string         signedTokenAsString = JsonConvert.SerializeObject(signedToken);
-		string         signedTokenBase64   = Convert.ToBase64String(Encoding.UTF8.GetBytes(signedTokenAsString));
+		string tokenAsString = JsonConvert.SerializeObject(token);
+		byte[] signature = signData(tokenAsString);
+		SignedToken<T> signedToken = new(token, signature);
+		string signedTokenAsString = JsonConvert.SerializeObject(signedToken);
+		string signedTokenBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(signedTokenAsString));
 		return signedTokenBase64;
 	}
 
 	public static bool ValidateToken<T>(string signedTokenBase64) where T : IToken
 	{
-		string         signedTokenAsString = Encoding.UTF8.GetString(Convert.FromBase64String(signedTokenBase64));
-		SignedToken<T> signedToken         = JsonConvert.DeserializeObject<SignedToken<T>>(signedTokenAsString);
-		T              token               = signedToken.Token;
-		string         tokenAsString       = JsonConvert.SerializeObject(token);
+		string signedTokenAsString = Encoding.UTF8.GetString(Convert.FromBase64String(signedTokenBase64));
+		SignedToken<T> signedToken = JsonConvert.DeserializeObject<SignedToken<T>>(signedTokenAsString);
+		T token = signedToken.Token;
+		string tokenAsString = JsonConvert.SerializeObject(token);
 		return verifyData(tokenAsString, signedToken.Signature, PublicKey);
 	}
 
@@ -76,7 +76,7 @@ public static class TokenVerification
 		{
 			rsa.ImportRSAPrivateKey(privateKey, out _);
 			RSAParameters rsaParams = rsa.ExportParameters(true);
-			byte[]        bytes     = rsa.SignData(Encoding.UTF8.GetBytes(data), SHA256.Create());
+			byte[] bytes = rsa.SignData(Encoding.UTF8.GetBytes(data), SHA256.Create());
 			return bytes;
 		}
 	}

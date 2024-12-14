@@ -19,35 +19,35 @@ public class Account : ICosmosObject, IInMemoryObject
 	public Account(string userName, string passwordHash, Guid id, string? email)
 	{
 		CreationDate = DateTime.UtcNow;
-		Id           = id;
-		UserName     = userName;
+		Id = id;
+		UserName = userName;
 		PasswordHash = passwordHash;
-		IsAdmin      = false;
-		Locked       = true;
-		Email        = email;
+		IsAdmin = false;
+		Locked = true;
+		Email = email;
 	}
 
-	public string            UserName         { get; private set; }
-	public string            PasswordHash     { get; set; }
-	public bool              IsAdmin          { get; set; }
-	public bool              Locked           { get; set; }
-	public string?           Email            { get; set; }
-	public DateTime          CreationDate     { get; set; }
-	public float             Balance          { get; set; }
-	public List<Transaction> Transactions     { get; set; }
-	public DateTime          LastLogin        { get; set; }
-	public int               LoginStreak      { get; set; }
-	public DateTime          LastStreakChange { get; set; }
-
-	[JsonProperty("id")] public Guid Id { get; private set; }
-
-	[JsonConstructor]
+	[Newtonsoft.Json.JsonConstructor]
 	public Account(List<Transaction>? Transactions, DateTime? LastLogin, DateTime? LastStreakChange)
 	{
-		this.Transactions	 = Transactions ?? [];
-		this.LastLogin		 = LastLogin ?? DateTime.MinValue;
+		this.Transactions = Transactions ?? [];
+		this.LastLogin = LastLogin ?? DateTime.MinValue;
 		this.LastStreakChange = LastStreakChange ?? DateTime.MinValue;
 	}
+
+	public string UserName { get; private set; }
+	public string PasswordHash { get; set; }
+	public bool IsAdmin { get; set; }
+	public bool Locked { get; set; }
+	public string? Email { get; set; }
+	public DateTime CreationDate { get; set; }
+	public float Balance { get; set; }
+	public List<Transaction> Transactions { get; set; }
+	public DateTime LastLogin { get; set; }
+	public int LoginStreak { get; set; }
+	public DateTime LastStreakChange { get; set; }
+
+	[JsonProperty("id")] public Guid Id { get; private set; }
 
 	public string Type => "account";
 }

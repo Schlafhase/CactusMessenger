@@ -26,18 +26,18 @@ public class Utils
 	}
 
 	internal static string GetStringSha256Hash(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return string.Empty;
-        }
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			return string.Empty;
+		}
 
-        byte[] textData = Encoding.UTF8.GetBytes(text);
-        byte[] hash = SHA256.HashData(textData);
-        return BitConverter.ToString(hash).Replace("-", string.Empty);
-    }
+		byte[] textData = Encoding.UTF8.GetBytes(text);
+		byte[] hash = SHA256.HashData(textData);
+		return BitConverter.ToString(hash).Replace("-", string.Empty);
+	}
 
-    public static async IAsyncEnumerable<T> ExecuteQuery<T>(IQueryable<T> query)
+	public static async IAsyncEnumerable<T> ExecuteQuery<T>(IQueryable<T> query)
 	{
 		FeedIterator<T> iterator = query
 			.ToFeedIterator();
@@ -68,7 +68,7 @@ public class Utils
 
 	public static string Relativize(DateTime date1, DateTime date2)
 	{
-		TimeSpan diff    = date2      - date1;
+		TimeSpan diff = date2 - date1;
 		TimeSpan dayDiff = date2.Date - date1.Date;
 
 		if (dayDiff.Days > 7)
@@ -78,9 +78,9 @@ public class Utils
 
 		if (dayDiff.Days >= 1)
 		{
-			return $"{dayDiff.Days} " + (dayDiff.Days != 1 ? "days" : "day")                            + " ago at " +
-			       (date1.Hour                        > 9 ? date1.Hour.ToString() : "0"   + date1.Hour) + ":"        +
-			       (date1.Minute                      > 9 ? date1.Minute.ToString() : "0" + date1.Minute);
+			return $"{dayDiff.Days} " + (dayDiff.Days != 1 ? "days" : "day") + " ago at " +
+				(date1.Hour > 9 ? date1.Hour.ToString() : "0" + date1.Hour) + ":" +
+				(date1.Minute > 9 ? date1.Minute.ToString() : "0" + date1.Minute);
 		}
 
 		if (diff.Hours >= 1)

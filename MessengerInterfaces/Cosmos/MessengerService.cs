@@ -10,26 +10,208 @@ public class MessengerService(
 	IRepository<Account> accountRepo,
 	IRepository<Channel> channelRepo,
 	IRepository<Message> messageRepo,
-	EventService         eventService,
-	Logger               logger)
+	EventService eventService,
+	Logger logger)
 	: IMessengerService
 {
-	public event Action<ChannelDTO_Output>? OnMessage;
-
 	private readonly AsyncLocker asyncLocker = new();
+	public event Action<ChannelDTO_Output>? OnMessage;
 
 	public async Task InitializeAsync() { }
 
+	private async Task<MessageDTO_Output> getMessage(Guid Id)
+	{
+		Message msg = await messageRepo.GetById(Id);
+		Account author = await getAccount(msg.AuthorId);
+		ChannelDTO_Output channel = await getChannel(msg.ChannelId);
+
+		try
+		{
+			MessageDTO_Output msgDTO = new(msg, author.UserName, author.IsAdmin, channel.Name);
+			return msgDTO;
+		}
+		catch (KeyNotFoundException)
+		{
+			throw new KeyNotFoundException($"Unable to find message with Id {Id}");
+		}
+	}
+
+	private async Task deleteChannel(Guid channelId)
+	{
+		//delete all messages in channel
+		await messageRepo.DeleteItemsWithFilter(msg => msg.ChannelId == channelId);
+		//delete channel
+		await channelRepo.DeleteItem(channelId);
+		logger.Log($"Deleted channel with Id {channelId}");
+	}
+
+	private async Task removeUserFromChannel(Guid channelId, Guid accountId)
+	{
+		ChannelDTO_Output channelDTO = await getChannel(channelId);
+		channelDTO.Users.Remove(accountId);
+
+		if (channelDTO.Users.Count == 0)
+		{
+			await deleteChannel(channelId);
+		}
+		else
+		{
+			Channel channel = new(channelDTO.Users, channelId, channelDTO.Name);
+			await channelRepo.Replace(channelId, channel);
+		}
+
+		;
+		logger.Log($"Removed user {accountId} from channel {channelId}");
+		eventService.ChannelsHaveChanged();
+	}
+
+	private async Task<ChannelDTO_Output[]> getAllChannels()
+	{
+		IQueryable<Channel> query = channelRepo.GetQueryable();
+		List<Channel> channels = await channelRepo.ToListAsync(query);
+		return await convertChannelsToDtos(channels);
+	}
+
+	private async Task<ChannelDTO_Output> getChannel(Guid channelId)
+	{
+		Channel channel;
+
+		try
+		{
+			channel = await channelRepo.GetById(channelId);
+		}
+		catch (KeyNotFoundException)
+		{
+			throw new KeyNotFoundException($"Unable to find channel with Id {channelId}");
+		}
+
+		if (channel is null)
+		{
+			throw new KeyNotFoundException($"Unable to find channel with Id {channelId}");
+		}
+
+
+		ChannelDTO_Output channelDTO = await createChannelDTO_OutputFromChannel(channel);
+		return channelDTO;
+	}
+
+	public async Task<Guid> CreateAccount(string username, string password, string? email)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+
+		try
+		{
+			await getAccountByUsername(username);
+		}
+		catch (KeyNotFoundException)
+		{
+			Guid userId = Guid.NewGuid();
+			string passwordHash = Utils.Utils.GetStringSha256Hash(password + userId);
+			await accountRepo.CreateNew(new Account(username, passwordHash, userId, email));
+			logger.Log($"Account created with username {username}");
+			return userId;
+		}
+
+		throw new UsernameExistsException();
+	}
+
+	private async Task<Account> getAccountByUsername(string username)
+	{
+		IQueryable<Account> q = accountRepo.GetQueryable()
+										   .Where(item => item.UserName == username);
+		List<Account> result = await accountRepo.ToListAsync(q);
+
+		if (result.Count == 1)
+		{
+			return result[0];
+		}
+
+		throw new KeyNotFoundException("User not found");
+	}
+
+	private async Task<Account> getAccount(Guid Id)
+	{
+		Account? acc = await accountRepo.GetById(Id);
+
+		if (acc is null)
+		{
+			throw new KeyNotFoundException($"Unable to find Account with Id {Id}");
+		}
+
+		return acc;
+	}
+
+	private async Task<Account[]> getAllAccounts()
+	{
+		IQueryable<Account> q = accountRepo.GetQueryable();
+		List<Account> result = await accountRepo.ToListAsync(q);
+		return result.ToArray();
+	}
+
+	//other methods
+
+	private async Task<MessageDTO_Output[]> convertMessagesToDtos(List<Message> messages)
+	{
+		return await Task.WhenAll(messages
+								  .Select(async msg =>
+								  {
+									  try
+									  {
+										  Account author = await getAccount(msg.AuthorId);
+										  ChannelDTO_Output channel = await getChannel(msg.ChannelId);
+										  return new MessageDTO_Output(
+											  msg, author.UserName, author.IsAdmin, channel.Name);
+									  }
+									  catch (Exception)
+									  {
+										  return null!;
+									  }
+								  })
+								  .Where(x => x != null)
+								  .ToArray());
+	}
+
+	private async Task<ChannelDTO_Output[]> convertChannelsToDtos(List<Channel> channels)
+	{
+		return await Task.WhenAll(channels
+								  .Select(async chnl =>
+								  {
+									  string[] userNames = await Task.WhenAll(chnl.Users
+																				  .Select(async userId =>
+																				  {
+																					  Account user =
+																						  await getAccount(userId);
+																					  return user.UserName;
+																				  }));
+									  return new ChannelDTO_Output(chnl, userNames.ToHashSet());
+								  })
+								  .Where(x => x != null)
+								  .ToArray());
+	}
+
+	private async Task<ChannelDTO_Output> createChannelDTO_OutputFromChannel(Channel channel)
+	{
+		string[] UserNames = await Task.WhenAll(channel.Users
+													   .Select(async userId =>
+													   {
+														   if (userId == CactusConstants.EveryoneId)
+														   {
+															   return "Everyone";
+														   }
+
+														   Account user = await getAccount(userId);
+														   return user.UserName;
+													   }));
+		return new ChannelDTO_Output(channel, UserNames.ToHashSet());
+	}
+
 	#region Message related methods
 
-	public async Task<MessageDTO_Output> GetMessage(Guid Id)
-	{
-		return await getMessage(Id);
-	}
+	public async Task<MessageDTO_Output> GetMessage(Guid Id) => await getMessage(Id);
 
 	public async Task PostMessage(Message message)
 	{
-		using IDisposable _       = await asyncLocker.Enter();
+		using IDisposable _ = await asyncLocker.Enter();
 		ChannelDTO_Output channel = await getChannel(message.ChannelId);
 		await messageRepo.CreateNew(message);
 		channel.LastMessage = message.DateTime;
@@ -40,7 +222,7 @@ public class MessengerService(
 
 	public async Task DeleteMessage(Guid id)
 	{
-		using IDisposable _   = await asyncLocker.Enter();
+		using IDisposable _ = await asyncLocker.Enter();
 		MessageDTO_Output msg = await getMessage(id);
 
 		ChannelDTO_Output channel = await getChannel(msg.ChannelId);
@@ -68,7 +250,7 @@ public class MessengerService(
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 		IQueryable<Message> query = messageRepo.GetQueryable()
-		                                       .Where(msg => msg.ChannelId == channelId);
+											   .Where(msg => msg.ChannelId == channelId);
 
 		List<Message> messages = await messageRepo.ToListAsync(query);
 		return await convertMessagesToDtos(messages);
@@ -160,7 +342,7 @@ public class MessengerService(
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 		IQueryable<Channel> query = channelRepo.GetQueryable()
-		                                       .Where(channel => channel.Users.Contains(accountId));
+											   .Where(channel => channel.Users.Contains(accountId));
 		List<Channel> channels = await channelRepo.ToListAsync(query);
 		return await convertChannelsToDtos(channels);
 	}
@@ -174,7 +356,7 @@ public class MessengerService(
 	public async Task AddUserToChannel(Guid Id, Guid channelId)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
-		Channel           channel;
+		Channel channel;
 
 		try
 		{
@@ -197,9 +379,9 @@ public class MessengerService(
 
 	public async Task<bool> LoginAccount(Guid id, string password)
 	{
-		using IDisposable _            = await asyncLocker.Enter();
-		Account           user         = await getAccount(id);
-		string            passwordHash = Utils.Utils.GetStringSha256Hash(password + user.Id);
+		using IDisposable _ = await asyncLocker.Enter();
+		Account user = await getAccount(id);
+		string passwordHash = Utils.Utils.GetStringSha256Hash(password + user.Id);
 		logger.Log($"User {user.UserName} logged in");
 		return passwordHash == user.PasswordHash;
 	}
@@ -214,23 +396,23 @@ public class MessengerService(
 		using IDisposable _ = await asyncLocker.Enter();
 		//remove user from all channels
 		IQueryable<Message> messageQuery = messageRepo.GetQueryable()
-		                                              .Where(msg => msg.AuthorId == id);
+													  .Where(msg => msg.AuthorId == id);
 		List<Message> messages = await messageRepo.ToListAsync(messageQuery);
 		//change all authorids from user to deleted CactusConstants.DeletedId
 		await Task.WhenAll(messages
-			                   .Select(msg =>
-			                           {
-				                           Message newMessage = new(msg.Id, msg.Content, msg.DateTime,
-				                                                    CactusConstants.DeletedId, msg.ChannelId);
-				                           return messageRepo.Replace(msg.Id, newMessage);
-			                           }));
+							   .Select(msg =>
+							   {
+								   Message newMessage = new(msg.Id, msg.Content, msg.DateTime,
+															CactusConstants.DeletedId, msg.ChannelId);
+								   return messageRepo.Replace(msg.Id, newMessage);
+							   }));
 		IQueryable<Guid> channelQuery = channelRepo.GetQueryable()
-		                                           .Where(channel => channel.Users.Contains(id))
-		                                           .Select(channel => channel.Id);
+												   .Where(channel => channel.Users.Contains(id))
+												   .Select(channel => channel.Id);
 
 		List<Guid> channelIds = await channelRepo.ToListAsync(channelQuery);
 		await Task.WhenAll(channelIds
-			                   .Select(channelId => { return removeUserFromChannel(channelId, id); }));
+							   .Select(channelId => { return removeUserFromChannel(channelId, id); }));
 		eventService.ChannelsHaveChanged();
 
 		//delete account
@@ -238,10 +420,8 @@ public class MessengerService(
 		logger.Log($"Account with Id {id} deleted");
 	}
 
-	public async Task<Guid> CreateAccount(string username, string password)
-	{
-		return await CreateAccount(username, password, null);
-	}
+	public async Task<Guid> CreateAccount(string username, string password) =>
+		await CreateAccount(username, password, null);
 
 	public async Task EditAccountAdmin(Guid id, bool giveAdmin)
 	{
@@ -277,8 +457,8 @@ public class MessengerService(
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 
-		Account target       = await getAccount(Id);
-		string  passwordHash = Utils.Utils.GetStringSha256Hash(newPW + Id);
+		Account target = await getAccount(Id);
+		string passwordHash = Utils.Utils.GetStringSha256Hash(newPW + Id);
 		target.PasswordHash = passwordHash;
 		await accountRepo.Replace(Id, target);
 		logger.Log($"Password changed for account {target.UserName}");
@@ -286,8 +466,8 @@ public class MessengerService(
 
 	public async Task UpdateAccountBalance(Guid Id, float amount)
 	{
-		using IDisposable _       = await asyncLocker.Enter();
-		Account           account = await getAccount(Id);
+		using IDisposable _ = await asyncLocker.Enter();
+		Account account = await getAccount(Id);
 		account.Balance = amount;
 		await accountRepo.Replace(Id, account);
 		logger.Log($"Updated balance for account {account.UserName}");
@@ -295,8 +475,8 @@ public class MessengerService(
 
 	public async Task UpdateAccountLastLogin(Guid Id, DateTime date)
 	{
-		using IDisposable _       = await asyncLocker.Enter();
-		Account           account = await getAccount(Id);
+		using IDisposable _ = await asyncLocker.Enter();
+		Account account = await getAccount(Id);
 		account.LastLogin = date;
 		await accountRepo.Replace(Id, account);
 		logger.Log($"Updated last login for account {account.UserName}");
@@ -304,9 +484,9 @@ public class MessengerService(
 
 	public async Task UpdateAccountLoginStreak(Guid Id, int streak)
 	{
-		using IDisposable _       = await asyncLocker.Enter();
-		Account           account = await getAccount(Id);
-		account.LoginStreak      = streak;
+		using IDisposable _ = await asyncLocker.Enter();
+		Account account = await getAccount(Id);
+		account.LoginStreak = streak;
 		account.LastStreakChange = DateTime.UtcNow;
 		await accountRepo.Replace(Id, account);
 		logger.Log($"Updated login streak for account {account.UserName}. New streak: {streak}");
@@ -331,190 +511,4 @@ public class MessengerService(
 	}
 
 	#endregion
-
-	private async Task<MessageDTO_Output> getMessage(Guid Id)
-	{
-		Message           msg     = await messageRepo.GetById(Id);
-		Account           author  = await getAccount(msg.AuthorId);
-		ChannelDTO_Output channel = await getChannel(msg.ChannelId);
-
-		try
-		{
-			MessageDTO_Output msgDTO = new(msg, author.UserName, author.IsAdmin, channel.Name);
-			return msgDTO;
-		}
-		catch (KeyNotFoundException)
-		{
-			throw new KeyNotFoundException($"Unable to find message with Id {Id}");
-		}
-	}
-
-	private async Task deleteChannel(Guid channelId)
-	{
-		//delete all messages in channel
-		await messageRepo.DeleteItemsWithFilter(msg => msg.ChannelId == channelId);
-		//delete channel
-		await channelRepo.DeleteItem(channelId);
-		logger.Log($"Deleted channel with Id {channelId}");
-	}
-
-	private async Task removeUserFromChannel(Guid channelId, Guid accountId)
-	{
-		ChannelDTO_Output channelDTO = await getChannel(channelId);
-		channelDTO.Users.Remove(accountId);
-
-		if (channelDTO.Users.Count == 0)
-		{
-			await deleteChannel(channelId);
-		}
-		else
-		{
-			Channel channel = new(channelDTO.Users, channelId, channelDTO.Name);
-			await channelRepo.Replace(channelId, channel);
-		}
-
-		;
-		logger.Log($"Removed user {accountId} from channel {channelId}");
-		eventService.ChannelsHaveChanged();
-	}
-
-	private async Task<ChannelDTO_Output[]> getAllChannels()
-	{
-		IQueryable<Channel> query    = channelRepo.GetQueryable();
-		List<Channel>       channels = await channelRepo.ToListAsync(query);
-		return await convertChannelsToDtos(channels);
-	}
-
-	private async Task<ChannelDTO_Output> getChannel(Guid channelId)
-	{
-		Channel channel;
-
-		try
-		{
-			channel = await channelRepo.GetById(channelId);
-		}
-		catch (KeyNotFoundException)
-		{
-			throw new KeyNotFoundException($"Unable to find channel with Id {channelId}");
-		}
-
-		if (channel is null)
-		{
-			throw new KeyNotFoundException($"Unable to find channel with Id {channelId}");
-		}
-
-
-		ChannelDTO_Output channelDTO = await createChannelDTO_OutputFromChannel(channel);
-		return channelDTO;
-	}
-
-	public async Task<Guid> CreateAccount(string username, string password, string? email)
-	{
-		using IDisposable _ = await asyncLocker.Enter();
-
-		try
-		{
-			await getAccountByUsername(username);
-		}
-		catch (KeyNotFoundException)
-		{
-			Guid   userId       = Guid.NewGuid();
-			string passwordHash = Utils.Utils.GetStringSha256Hash(password + userId);
-			await accountRepo.CreateNew(new Account(username, passwordHash, userId, email));
-			logger.Log($"Account created with username {username}");
-			return userId;
-		}
-
-		throw new UsernameExistsException();
-	}
-
-	private async Task<Account> getAccountByUsername(string username)
-	{
-		IQueryable<Account> q = accountRepo.GetQueryable()
-		                                   .Where(item => item.UserName == username);
-		List<Account> result = await accountRepo.ToListAsync(q);
-
-		if (result.Count == 1)
-		{
-			return result[0];
-		}
-
-		throw new KeyNotFoundException("User not found");
-	}
-
-	private async Task<Account> getAccount(Guid Id)
-	{
-		Account? acc = await accountRepo.GetById(Id);
-
-		if (acc is null)
-		{
-			throw new KeyNotFoundException($"Unable to find Account with Id {Id}");
-		}
-
-		return acc;
-	}
-
-	private async Task<Account[]> getAllAccounts()
-	{
-		IQueryable<Account> q      = accountRepo.GetQueryable();
-		List<Account>       result = await accountRepo.ToListAsync(q);
-		return result.ToArray();
-	}
-
-//other methods
-
-	private async Task<MessageDTO_Output[]> convertMessagesToDtos(List<Message> messages)
-	{
-		return await Task.WhenAll(messages
-		                          .Select(async msg =>
-		                                  {
-			                                  try
-			                                  {
-				                                  Account           author  = await getAccount(msg.AuthorId);
-				                                  ChannelDTO_Output channel = await getChannel(msg.ChannelId);
-				                                  return new MessageDTO_Output(
-					                                  msg, author.UserName, author.IsAdmin, channel.Name);
-			                                  }
-			                                  catch (Exception)
-			                                  {
-				                                  return null!;
-			                                  }
-		                                  })
-		                          .Where(x => x != null)
-		                          .ToArray());
-	}
-
-	private async Task<ChannelDTO_Output[]> convertChannelsToDtos(List<Channel> channels)
-	{
-		return await Task.WhenAll(channels
-		                          .Select(async chnl =>
-		                                  {
-			                                  string[] userNames = await Task.WhenAll(chnl.Users
-				                                                       .Select(async userId =>
-				                                                               {
-					                                                               Account user =
-						                                                               await getAccount(userId);
-					                                                               return user.UserName;
-				                                                               }));
-			                                  return new ChannelDTO_Output(chnl, userNames.ToHashSet());
-		                                  })
-		                          .Where(x => x != null)
-		                          .ToArray());
-	}
-
-	private async Task<ChannelDTO_Output> createChannelDTO_OutputFromChannel(Channel channel)
-	{
-		string[] UserNames = await Task.WhenAll(channel.Users
-		                                               .Select(async userId =>
-		                                                       {
-			                                                       if (userId == CactusConstants.EveryoneId)
-			                                                       {
-				                                                       return "Everyone";
-			                                                       }
-
-			                                                       Account user = await getAccount(userId);
-			                                                       return user.UserName;
-		                                                       }));
-		return new ChannelDTO_Output(channel, UserNames.ToHashSet());
-	}
 }

@@ -111,8 +111,8 @@
 		foreach (int[] row in Grid)
 		{
 			Console.WriteLine((row[0] != 0 ? row[0] == 1 ? "X" : "O" : " ") +
-			                  (row[1] != 0 ? row[1] == 1 ? "X" : "O" : " ") +
-			                  (row[2] != 0 ? row[2] == 1 ? "X" : "O" : " "));
+							  (row[1] != 0 ? row[1] == 1 ? "X" : "O" : " ") +
+							  (row[2] != 0 ? row[2] == 1 ? "X" : "O" : " "));
 		}
 	}
 }

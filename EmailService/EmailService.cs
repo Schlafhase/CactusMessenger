@@ -11,7 +11,7 @@ public class EmailService
 
 	public EmailService(string password)
 	{
-		smtpClient           = new SmtpClient("smtp.office365.com", 587);
+		smtpClient = new SmtpClient("smtp.office365.com", 587);
 		smtpClient.EnableSsl = true;
 		//smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
 		// set smtp-client with basicAuthentication
@@ -30,18 +30,18 @@ public class EmailService
 		MailAddress from = new("linus.schneeberg@schlafhase.uk", "Cactus Messenger");
 
 		using (MailMessage mail = new()
-		                          {
-			                          // set subject and encoding
-			                          From            = from,
-			                          Subject         = subject,
-			                          SubjectEncoding = Encoding.UTF8,
+			{
+				// set subject and encoding
+				From = from,
+				Subject = subject,
+				SubjectEncoding = Encoding.UTF8,
 
-			                          // set body-message and encoding
-			                          Body         = body,
-			                          BodyEncoding = Encoding.UTF8,
-			                          // text or html
-			                          IsBodyHtml = true
-		                          })
+				// set body-message and encoding
+				Body = body,
+				BodyEncoding = Encoding.UTF8,
+				// text or html
+				IsBodyHtml = true
+			})
 		{
 			//add recipients
 			foreach (string receiver in receivers)
@@ -53,16 +53,13 @@ public class EmailService
 		}
 	}
 
-	public static string GenerateEmailBase(string header, string body)
-	{
-		return
-			$"<div style='padding: 5px'><div id='info' style='border-radius: 20px; max-width: 500px; padding: 20px; color: white; background-color: black;'><h1 style='padding-bottom: 30px;'>{header}</h1>{body}</div></div>";
-	}
+	public static string GenerateEmailBase(string header, string body) =>
+		$"<div style='padding: 5px'><div id='info' style='border-radius: 20px; max-width: 500px; padding: 20px; color: white; background-color: black;'><h1 style='padding-bottom: 30px;'>{header}</h1>{body}</div></div>";
 
 	public static string GenerateAccountRequestEmail(string username, string description, Guid id, string email)
 	{
 		string emailLower = email.ToLower();
-		bool   addEmail   = true;
+		bool addEmail = true;
 
 		if (string.IsNullOrWhiteSpace(emailLower))
 		{
@@ -76,8 +73,8 @@ public class EmailService
 
 	public static string GenerateVerificationEmail(Guid id, string email)
 	{
-		EmailVerifyToken token       = new(email, id, DateTime.UtcNow);
-		string           tokenString = TokenVerification.GetTokenString(token);
+		EmailVerifyToken token = new(email, id, DateTime.UtcNow);
+		string tokenString = TokenVerification.GetTokenString(token);
 		string body =
 			$"<span>Verify your email address to add it to your account.<br/> <a style='color: skyblue;' href='https://cactusmessenger.azurewebsites.net/emails'>Why should I add my email address to my account?</a></span><div style='padding-top:25px;'><a style='color: white; text-decoration: none; padding: 5px 10px;background-color: blue; border-radius: 10px;' href='https://cactusmessenger.azurewebsites.net/verifyEmail?token={tokenString}'>Verify</a></div>";
 		return GenerateEmailBase("Verify your email address.", body);

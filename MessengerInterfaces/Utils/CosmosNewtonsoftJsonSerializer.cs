@@ -11,8 +11,8 @@ namespace CactusFrontEnd.Cosmos.utils;
 /// </summary>
 public class CosmosNewtonsoftJsonSerializer : CosmosSerializer
 {
-	private static readonly Encoding               defaultEncoding = new UTF8Encoding(false, true);
-	private readonly        JsonSerializerSettings serializerSettings;
+	private static readonly Encoding defaultEncoding = new UTF8Encoding(false, true);
+	private readonly JsonSerializerSettings serializerSettings;
 
 	/// <summary>
 	///     Initializes a new instance of <see cref="CosmosNewtonsoftJsonSerializer" /> with the given parameters.
@@ -37,9 +37,9 @@ public class CosmosNewtonsoftJsonSerializer : CosmosSerializer
 				return (T)(object)stream;
 			}
 
-			using StreamReader   sr             = new(stream);
+			using StreamReader sr = new(stream);
 			using JsonTextReader jsonTextReader = new(sr);
-			JsonSerializer       jsonSerializer = getSerializer();
+			JsonSerializer jsonSerializer = getSerializer();
 			return jsonSerializer.Deserialize<T>(jsonTextReader)!;
 		}
 	}
@@ -52,13 +52,13 @@ public class CosmosNewtonsoftJsonSerializer : CosmosSerializer
 	/// <returns>An open readable stream containing the JSON of the serialized object</returns>
 	public override Stream ToStream<T>(T input)
 	{
-		MemoryStream       streamPayload = new();
-		using StreamWriter streamWriter  = new(streamPayload, defaultEncoding, 1024, true);
+		MemoryStream streamPayload = new();
+		using StreamWriter streamWriter = new(streamPayload, defaultEncoding, 1024, true);
 		// ReSharper disable once UsingStatementResourceInitialization
 		using JsonWriter writer = new JsonTextWriter(streamWriter)
-		                          {
-			                          Formatting = Formatting.None
-		                          };
+		{
+			Formatting = Formatting.None
+		};
 		JsonSerializer jsonSerializer = getSerializer();
 		jsonSerializer.Serialize(writer, input);
 		writer.Flush();
@@ -72,8 +72,5 @@ public class CosmosNewtonsoftJsonSerializer : CosmosSerializer
 	///     JsonSerializer has hit a race conditions with custom settings that cause null reference exception.
 	///     To avoid the race condition a new JsonSerializer is created for each call
 	/// </summary>
-	private JsonSerializer getSerializer()
-	{
-		return JsonSerializer.Create(serializerSettings);
-	}
+	private JsonSerializer getSerializer() => JsonSerializer.Create(serializerSettings);
 }

@@ -15,9 +15,9 @@ public class EventService
 	{
 		OnChannelListChange?.Invoke();
 	}
-	
+
 	public event Action? OnChannelChange;
-	
+
 	public void ChannelHasChanged()
 	{
 		OnChannelChange?.Invoke();

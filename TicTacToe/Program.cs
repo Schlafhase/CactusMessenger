@@ -2,10 +2,10 @@
 {
 	private static void Main(string[] args)
 	{
-		int       state         = -1;
-		int       player        = 1;
-		bool      succesfulMove = false;
-		TicTacToe ticTacToe     = new();
+		int state = -1;
+		int player = 1;
+		bool succesfulMove = false;
+		TicTacToe ticTacToe = new();
 
 		while (state == -1)
 		{

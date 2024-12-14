@@ -11,9 +11,9 @@ namespace CactusFrontEnd.Cosmos;
 public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) : IRepository<T>
 	where T : class, ICosmosObject
 {
-	private readonly AsyncLocker  asyncLocker = new();
-	private readonly CosmosClient client      = client;
-	private readonly Container    container   = client.GetContainer("cactus-messenger", "cactus-messenger");
+	private readonly AsyncLocker asyncLocker = new();
+	private readonly CosmosClient client = client;
+	private readonly Container container = client.GetContainer("cactus-messenger", "cactus-messenger");
 
 	public async Task CreateNew(T entity)
 	{
@@ -64,43 +64,43 @@ public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) 
 	public IQueryable<T> GetQueryable()
 	{
 		return container.GetItemLinqQueryable<T>()
-		                .Where(item => item.Type == type);
+						.Where(item => item.Type == type);
 	}
 
 	public async Task DeleteItemsWithFilter(Expression<Func<T, bool>> filter)
 	{
 		IQueryable<Guid> query = GetQueryable()
-		                         .Where(filter)
-		                         .Select(item => item.Id);
+								 .Where(filter)
+								 .Select(item => item.Id);
 		List<Guid> ids = await ToListAsync(query);
 
 		await Task.WhenAll(ids
-			                   .Select(id => DeleteItem(id)));
+							   .Select(id => DeleteItem(id)));
 	}
 
 	public async Task DeleteItem(Guid id)
 	{
-		using IDisposable _      = await asyncLocker.Enter();
+		using IDisposable _ = await asyncLocker.Enter();
 		await container.DeleteItemAsync<T>(id.ToString(), new PartitionKey(id.ToString()));
 	}
 
 	public async Task Replace(Guid id, T entity)
 	{
-		using IDisposable _      = await asyncLocker.Enter();
+		using IDisposable _ = await asyncLocker.Enter();
 		await container.ReplaceItemAsync<T>(entity, id.ToString(), new PartitionKey(id.ToString()));
 	}
 
 	public async Task<List<TElement>> ToListAsync<TElement>(IQueryable<TElement> query)
 	{
 		IAsyncEnumerable<TElement> response = Utils.Utils.ExecuteQuery(query);
-		List<TElement>             result   = await Utils.Utils.ToListAsync(response);
+		List<TElement> result = await Utils.Utils.ToListAsync(response);
 		return result;
 	}
 
 	public async Task UpdateItemVoid(Guid id, Action<T> update)
 	{
-		using IDisposable _      = await asyncLocker.Enter();
-		T                 entity = await GetById(id);
+		using IDisposable _ = await asyncLocker.Enter();
+		T entity = await GetById(id);
 		update(entity);
 		await Replace(id, entity);
 	}

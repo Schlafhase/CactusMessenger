@@ -15,8 +15,6 @@ public class MessageDTO_Input
 
 	public string Content { get; }
 
-	public Message ToMessage(Guid userId, Guid channelId)
-	{
-		return new Message(Guid.NewGuid(), Content, DateTime.UtcNow, userId, channelId);
-	}
+	public Message ToMessage(Guid userId, Guid channelId) =>
+		new(Guid.NewGuid(), Content, DateTime.UtcNow, userId, channelId);
 }
