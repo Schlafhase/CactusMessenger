@@ -72,22 +72,20 @@ public static class TokenVerification
 
 	private static byte[] signData(string data)
 	{
-		using (RSACryptoServiceProvider rsa = new())
-		{
-			rsa.ImportRSAPrivateKey(privateKey, out _);
-			RSAParameters rsaParams = rsa.ExportParameters(true);
-			byte[] bytes = rsa.SignData(Encoding.UTF8.GetBytes(data), SHA256.Create());
-			return bytes;
-		}
+		using RSACryptoServiceProvider rsa = new();
+
+		rsa.ImportRSAPrivateKey(privateKey, out _);
+		RSAParameters rsaParams = rsa.ExportParameters(true);
+		byte[] bytes = rsa.SignData(Encoding.UTF8.GetBytes(data), SHA256.Create());
+		return bytes;
 	}
 
 	private static bool verifyData(string data, byte[] signature, byte[] publicKey)
 	{
-		using (RSACryptoServiceProvider rsa = new())
-		{
-			rsa.ImportRSAPublicKey(publicKey, out _);
-			RSAParameters rsaParams = rsa.ExportParameters(false);
-			return rsa.VerifyData(Encoding.UTF8.GetBytes(data), SHA256.Create(), signature);
-		}
+		using RSACryptoServiceProvider rsa = new();
+
+		rsa.ImportRSAPublicKey(publicKey, out _);
+		RSAParameters rsaParams = rsa.ExportParameters(false);
+		return rsa.VerifyData(Encoding.UTF8.GetBytes(data), SHA256.Create(), signature);
 	}
 }

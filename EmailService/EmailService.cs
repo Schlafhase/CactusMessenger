@@ -29,28 +29,27 @@ public class EmailService
 	{
 		MailAddress from = new("linus.schneeberg@schlafhase.uk", "Cactus Messenger");
 
-		using (MailMessage mail = new()
-			{
-				// set subject and encoding
-				From = from,
-				Subject = subject,
-				SubjectEncoding = Encoding.UTF8,
-
-				// set body-message and encoding
-				Body = body,
-				BodyEncoding = Encoding.UTF8,
-				// text or html
-				IsBodyHtml = true
-			})
+		using MailMessage mail = new()
 		{
-			//add recipients
-			foreach (string receiver in receivers)
-			{
-				mail.To.Add(receiver);
-			}
+			// set subject and encoding
+			From = from,
+			Subject = subject,
+			SubjectEncoding = Encoding.UTF8,
 
-			smtpClient.Send(mail);
+			// set body-message and encoding
+			Body = body,
+			BodyEncoding = Encoding.UTF8,
+			// text or html
+			IsBodyHtml = true
+		};
+
+		//add recipients
+		foreach (string receiver in receivers)
+		{
+			mail.To.Add(receiver);
 		}
+
+		smtpClient.Send(mail);
 	}
 
 	public static string GenerateEmailBase(string header, string body) =>
