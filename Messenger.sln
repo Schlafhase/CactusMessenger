@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacToe", "TicTacToe\TicT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailService", "EmailService\EmailService.csproj", "{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptimisedImages", "..\OptimisedImages\OptimisedImages.csproj", "{E3D6F3F0-9AEF-45BB-9B7F-2229F432F79D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CactusPay", "CactusPay\CactusPay.csproj", "{62B63CD9-310B-402C-A1D5-27C611774525}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discord", "Discord\Discord.csproj", "{289159BA-1AB0-4EDC-ACB6-8539BE09237D}"
@@ -23,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessengerInterfaces", "MessengerInterfaces\MessengerInterfaces.csproj", "{9836C80D-64B6-472B-B705-D50C3ED8A6C1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CactusFrontEnd", "CactusFrontEnd\CactusFrontEnd.csproj", "{616A3811-E42E-4273-B20D-CE68E65C3B02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptimisedImages", "OptimisedImages\OptimisedImages.csproj", "{7E3B386E-7688-4D4F-847D-975F2D92081B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,10 +42,6 @@ Global
 		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3D6F3F0-9AEF-45BB-9B7F-2229F432F79D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3D6F3F0-9AEF-45BB-9B7F-2229F432F79D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3D6F3F0-9AEF-45BB-9B7F-2229F432F79D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3D6F3F0-9AEF-45BB-9B7F-2229F432F79D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{62B63CD9-310B-402C-A1D5-27C611774525}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62B63CD9-310B-402C-A1D5-27C611774525}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62B63CD9-310B-402C-A1D5-27C611774525}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -62,6 +58,10 @@ Global
 		{616A3811-E42E-4273-B20D-CE68E65C3B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{616A3811-E42E-4273-B20D-CE68E65C3B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{616A3811-E42E-4273-B20D-CE68E65C3B02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
