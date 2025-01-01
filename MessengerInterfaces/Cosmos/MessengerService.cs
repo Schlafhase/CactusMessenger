@@ -10,6 +10,7 @@ public class MessengerService(
 	IRepository<Account> accountRepo,
 	IRepository<Channel> channelRepo,
 	IRepository<Message> messageRepo,
+	IRepository<CleanUpData> cleanUpDataRepo,
 	EventService eventService,
 	Logger logger)
 	: IMessengerService
@@ -95,7 +96,7 @@ public class MessengerService(
 		return channelDTO;
 	}
 
-	public async Task<Guid> CreateAccount(string username, string password, string? email)
+	public async Task<Guid> CreateAccount(string username, string password, string? email = null, bool demo=false)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 
@@ -107,7 +108,7 @@ public class MessengerService(
 		{
 			Guid userId = Guid.NewGuid();
 			string passwordHash = Utils.Utils.GetStringSha256Hash(password + userId);
-			await accountRepo.CreateNew(new Account(username, passwordHash, userId, email));
+			await accountRepo.CreateNew(new Account(username, passwordHash, userId, email, demo));
 			logger.Log($"Account created with username {username}");
 			return userId;
 		}
@@ -141,11 +142,11 @@ public class MessengerService(
 		return acc;
 	}
 
-	private async Task<Account[]> getAllAccounts()
+	private async Task<List<Account>> getAllAccounts()
 	{
 		IQueryable<Account> q = accountRepo.GetQueryable();
 		List<Account> result = await accountRepo.ToListAsync(q);
-		return result.ToArray();
+		return result;
 	}
 
 	//other methods
@@ -254,6 +255,15 @@ public class MessengerService(
 
 		List<Message> messages = await messageRepo.ToListAsync(query);
 		return await convertMessagesToDtos(messages);
+	}
+	
+	public async Task<List<MessageDTO_Output>> GetMessagesByAccount(Guid accountId)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		IQueryable<Message> query = messageRepo.GetQueryable()
+											   .Where(msg => msg.AuthorId == accountId);
+		List<Message> messages = await messageRepo.ToListAsync(query);
+		return (await convertMessagesToDtos(messages)).ToList();
 	}
 
 	#endregion
@@ -420,9 +430,6 @@ public class MessengerService(
 		logger.Log($"Account with Id {id} deleted");
 	}
 
-	public async Task<Guid> CreateAccount(string username, string password) =>
-		await CreateAccount(username, password, null);
-
 	public async Task EditAccountAdmin(Guid id, bool giveAdmin)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
@@ -460,6 +467,16 @@ public class MessengerService(
 		Account target = await getAccount(Id);
 		string passwordHash = Utils.Utils.GetStringSha256Hash(newPW + Id);
 		target.PasswordHash = passwordHash;
+		await accountRepo.Replace(Id, target);
+		logger.Log($"Password changed for account {target.UserName}");
+	}
+	
+	public async Task ChangePWHash(Guid Id, string newPWHash)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		
+		Account target = await getAccount(Id);
+		target.PasswordHash = newPWHash;
 		await accountRepo.Replace(Id, target);
 		logger.Log($"Password changed for account {target.UserName}");
 	}
@@ -504,11 +521,27 @@ public class MessengerService(
 		return await getAccountByUsername(username);
 	}
 
-	public async Task<Account[]> GetAllAccounts()
+	public async Task<List<Account>> GetAllAccounts()
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 		return await getAllAccounts();
 	}
 
+	#endregion
+	
+	#region Clean up methods
+	
+	public async Task<CleanUpData> GetCleanUpData()
+	{
+		CleanUpData? data = await cleanUpDataRepo.GetById(CactusConstants.CleanUpDataId);
+		
+		return data ?? throw new KeyNotFoundException("Clean up data not found");
+	}
+	
+	public async Task SaveCleanUpData(CleanUpData data)
+	{
+		await cleanUpDataRepo.Replace(CactusConstants.CleanUpDataId, data);
+	}
+	
 	#endregion
 }

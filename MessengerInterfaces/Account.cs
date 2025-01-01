@@ -16,14 +16,15 @@ public class Account : ICosmosObject, IInMemoryObject
 	public Account(string userName, string passwordHash, string email) : this(
 		userName, passwordHash, Guid.NewGuid(), email) { }
 
-	public Account(string userName, string passwordHash, Guid id, string? email)
+	public Account(string userName, string passwordHash, Guid id, string? email, bool demo = false)
 	{
 		CreationDate = DateTime.UtcNow;
 		Id = id;
 		UserName = userName;
 		PasswordHash = passwordHash;
 		IsAdmin = false;
-		Locked = true;
+		Locked = !demo;
+		IsDemo = demo;
 		Email = email;
 	}
 
@@ -39,6 +40,7 @@ public class Account : ICosmosObject, IInMemoryObject
 	public string PasswordHash { get; set; }
 	public bool IsAdmin { get; set; }
 	public bool Locked { get; set; }
+	public bool IsDemo { get; set; }
 	public string? Email { get; set; }
 	public DateTime CreationDate { get; set; }
 	public float Balance { get; set; }

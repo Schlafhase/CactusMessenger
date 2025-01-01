@@ -14,15 +14,13 @@ public class PaymentService(
 {
 	public async Task Pay(SignedToken<PaymentToken> signedToken)
 	{
-		PaymentToken token;
-
 		if (!TokenVerification.ValidateToken<PaymentToken>(
 			Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(signedToken)))))
 		{
 			throw new ArgumentException("Invalid token");
 		}
 
-		token = signedToken.Token;
+		PaymentToken token = signedToken.Token;
 
 		Guid merchantId = token.MerchantId;
 		Guid clientId = token.Recipients[0];
@@ -42,7 +40,7 @@ public class PaymentService(
 			throw new ArgumentException("Insufficient funds");
 		}
 
-		PaymentManager manager = await getManager();
+		PaymentManager manager = await getManager() ?? throw new ArgumentException("Payment manager not found.");
 
 		if (!manager.OpenTransactions.TryGetValue(transactionId, out int value))
 		{
@@ -69,9 +67,9 @@ public class PaymentService(
 
 	public async Task RegisterTransaction(Transaction transaction, int uses)
 	{
-		paymentRepo.UpdateItemVoid(CactusConstants.PaymentManagerId,
+		await paymentRepo.UpdateItemVoid(CactusConstants.PaymentManagerId,
 								   manager => manager.OpenTransactions.Add(transaction.Token.TransactionId, uses));
 	}
 
-	private async Task<PaymentManager> getManager() => await paymentRepo.GetById(CactusConstants.PaymentManagerId);
+	private async Task<PaymentManager?> getManager() => await paymentRepo.GetById(CactusConstants.PaymentManagerId);
 }

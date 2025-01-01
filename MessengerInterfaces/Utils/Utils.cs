@@ -5,7 +5,7 @@ using Microsoft.Azure.Cosmos.Linq;
 
 namespace CactusFrontEnd.Utils;
 
-public class Utils
+public static class Utils
 {
 	//private Container container;
 	//public Utils(CosmosClient client)
@@ -25,7 +25,7 @@ public class Utils
 		return result;
 	}
 
-	internal static string GetStringSha256Hash(string text)
+	public static string GetStringSha256Hash(string text)
 	{
 		if (string.IsNullOrEmpty(text))
 		{

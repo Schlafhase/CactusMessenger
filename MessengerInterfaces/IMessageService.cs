@@ -13,6 +13,7 @@ public interface IMessageService
 	Task<MessageDTO_Output[]> GetAllMessages();
 
 	Task<MessageDTO_Output[]> GetAllMessagesInChannel(Guid channelId);
+	Task<List<MessageDTO_Output>> GetMessagesByAccount(Guid accountId);
 
 	//Task PostMessage(Message message, Guid channelId);
 	Task DeleteMessage(Guid id);

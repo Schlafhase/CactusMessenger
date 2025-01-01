@@ -10,6 +10,10 @@ public static class CactusConstants
 	public static Guid GlobalChannelId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000005");
 
 	public static Guid PaymentManagerId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000006");
+	public static Guid CleanUpDataId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000007");
 
 	public static string AuthTokenKey => "CactusMessengerAuthToken";
+	
+	public static TimeSpan DemoAccountLifetime { get; } = TimeSpan.FromMinutes(15);
+	public static TimeSpan CleanUpFrequency { get; } = TimeSpan.FromMinutes(15);
 }
