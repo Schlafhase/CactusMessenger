@@ -1,0 +1,16 @@
+﻿<Alert
+    Type="@_type"
+    @bind-IsVisible="@_visible"
+    NotificationStyle="@NotificationStyles.Normal"
+    ShowCloseButton="@false"
+    AutoClose="@false">
+    <Content>
+        @_text
+    </Content>
+</Alert>
+
+<style>
+    .balert-text {
+        color: @_color;
+    }
+</style>

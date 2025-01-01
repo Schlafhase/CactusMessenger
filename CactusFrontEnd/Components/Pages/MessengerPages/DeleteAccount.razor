@@ -1,0 +1,31 @@
+﻿@page "/deleteAccount"
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStore
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inherits AuthorizedPage
+
+<PageTitle>Delete Account</PageTitle>
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+
+<h1>Delete Account</h1>
+
+Deleting your Account can't be undone. <br/>
+<input type="button" value="Delete my Account" @onclick="@deleteAccountClick"/>
+
+@code {
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Initialize(() => navigationManager.NavigateTo("logout"));
+		}
+	}
+
+	private async Task deleteAccountClick()
+	{
+		await messengerService.DeleteAccount(user.Id);
+		navigationManager.NavigateTo("logout");
+	}
+
+}

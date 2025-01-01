@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="InMemoryImplementations\**"/>
+        <Content Remove="InMemoryImplementations\**"/>
+        <EmbeddedResource Remove="InMemoryImplementations\**"/>
+        <EmbeddedResource Remove="Security\**"/>
+        <None Remove="InMemoryImplementations\**"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Blazor.ContextMenu" Version="2.1.0"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+        <PackageReference Include="JsonNet.ContractResolvers" Version="2.0.0"/>
+        <PackageReference Include="Majorsoft.Blazor.Components.Modal" Version="1.5.0"/>
+        <PackageReference Include="Majorsoft.Blazor.Components.Notifications" Version="1.5.0"/>
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.39.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    
+
+    <ItemGroup>
+        <None Include="wwwroot\Images\admin_icon.svg"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="db.password">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="email.password">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="privateKey.privkey">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="publicKey.pubkey">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OptimisedImages\OptimisedImages.csproj" />
+      <ProjectReference Include="..\CactusPay\CactusPay.csproj" />
+      <ProjectReference Include="..\Discord\Discord.csproj" />
+      <ProjectReference Include="..\EmailService\EmailService.csproj" />
+      <ProjectReference Include="..\MessengerInterfaces\MessengerInterfaces.csproj" />
+      <ProjectReference Include="..\TicTacToe\TicTacToe.csproj" />
+    </ItemGroup>
+
+
+</Project>

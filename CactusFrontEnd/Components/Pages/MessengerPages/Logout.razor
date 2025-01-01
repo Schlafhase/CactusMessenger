@@ -1,0 +1,29 @@
+﻿@page "/logout"
+@using CactusFrontEnd.Events
+@using MessengerInterfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@code {
+	[Inject] private NavigationManager navigationManager { get; set; }
+	[Inject] private EventService eventService { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "redirectUrl")]
+	public string? RedirectUrl { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		try
+		{
+			await ProtectedLocalStore.DeleteAsync(CactusConstants.AuthTokenKey);
+			eventService.TokenHasChanged();
+		}
+		finally
+		{
+			navigationManager.NavigateTo(RedirectUrl != null ? $"login?redirectUrl={RedirectUrl}" : "login");
+		}
+	}
+
+}

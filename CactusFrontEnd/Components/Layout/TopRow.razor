@@ -1,0 +1,87 @@
+﻿@using CactusFrontEnd.Events
+@using Messenger
+@using MessengerInterfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@implements IDisposable
+@inject ProtectedLocalStorage ProtectedLocalStore
+@rendermode @(new InteractiveServerRenderMode(false))
+
+@if (user is null)
+{
+	<a href="login">Log in</a>
+}
+else
+{
+	<a id="settings" href="settings"></a>
+	<a href="settings"
+	   style="color: white; text-decoration: none; padding-left: 10px;margin-left: 1.1rem;">@user.UserName</a>
+	<a href="logout">Log out</a>
+}
+
+
+<style>
+	#settings {
+		width: 24px;
+		height: 24px;
+		position: absolute;
+		left: 0;
+		font-size: 30px;
+		color: black;
+		background: url(Images/settings.png);
+		background-size: cover;
+	}
+
+</style>
+
+@code {
+	private string? token;
+	private Account? user = default;
+	private Action tokenChangeAction;
+	[Inject] private IMessengerService messengerService { get; set; }
+	[Inject] private EventService eventService { get; set; }
+
+	protected override async void OnInitialized()
+	{
+		await refresh();
+		tokenChangeAction = async () => { await refresh(); };
+		eventService.OnTokenChange += tokenChangeAction;
+	}
+
+	public async Task refresh()
+	{
+		try
+		{
+			ProtectedBrowserStorageResult<string> result = await ProtectedLocalStore.GetAsync<string>(CactusConstants.AuthTokenKey);
+			token = result.Value;
+
+			if (token is not null)
+			{
+				try
+				{
+					SignedToken<AuthorizationToken> signedToken = TokenVerification.GetTokenFromString<AuthorizationToken>(token);
+					user = await messengerService.GetAccount(signedToken.Token.UserId);
+				}
+				catch
+				{
+					user = null;
+				}
+			}
+			else
+			{
+				user = null;
+			}
+		}
+		catch
+		{
+			user = null;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public void Dispose()
+	{
+		eventService.OnTokenChange -= tokenChangeAction;
+	}
+
+}

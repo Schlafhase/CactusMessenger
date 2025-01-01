@@ -1,0 +1,16 @@
+-channel details page
+-context menu für ios (?)
+-password resets
+-cactus credits
+-announcement channel
+-EVIL CACTUS
+
+// TODO: add clean up service (run every 24 hours or something (can check every time a user opens the page))
+// - remove expired transactions
+// - maybe implement object deletion chunks?
+
+// Math mode (clock)
+
+// TODO: fix login streaks
+// TODO: console
+// TODO: implement password reset without being logged in

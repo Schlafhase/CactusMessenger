@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<style>
+	.errorSpan {
+		color: red;
+		font-style: italic;
+	}
+
+	.card-cactus {
+		width: min(100%, 700px);
+		background-color: #13011c;
+		border-radius: 15px;
+		padding: 20px;
+		box-shadow: 0px 0px 15px magenta;
+	}
+
+	.btn-cactus {
+		height: 35px;
+		appearance: none;
+		background-color: #000aca;
+		border: 1px solid rgba(27, 31, 35, .15);
+		border-radius: 6px;
+		box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+		box-sizing: border-box;
+		color: #fff;
+		cursor: pointer;
+		display: inline-block;
+		font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		padding: 6px 16px;
+		position: relative;
+		text-align: center;
+		text-decoration: none;
+		user-select: none;
+		-webkit-user-select: none;
+		touch-action: manipulation;
+		vertical-align: middle;
+		white-space: nowrap;
+	}
+
+	.btn-cactus:focus:not(:focus-visible):not(.focus-visible) {
+		box-shadow: none;
+		outline: none;
+	}
+
+	.btn-cactus:disabled:hover {
+		background-color: #454575;
+	}
+
+	.btn-cactus:hover:not(:disabled) {
+		background-color: #00559d;
+	}
+
+	.btn-cactus:focus {
+		box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+		outline: none;
+	}
+
+	.btn-cactus:disabled {
+		background-color: #333062;
+		border-color: rgba(27, 31, 35, .1);
+		color: rgba(255, 255, 255, .8);
+		cursor: not-allowed;
+	}
+
+	.btn-cactus:active:not(:disabled) {
+		background-color: #0028ac;
+		box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+	}
+
+	.danger {
+		background-color: red
+	}
+
+	.danger:hover:not(:disabled) {
+		background-color: orangered;
+	}
+
+	.danger:active:not(:disabled) {
+		background-color: red;
+	}
+
+	.primary {
+		background-color: dodgerblue;
+	}
+
+	.primary:hover {
+		background-color: deepskyblue;
+	}
+
+	.primary:active {
+		background-color: dodgerblue;
+	}
+
+	.showPassword {
+		width: 25px;
+		height: 20px;
+		border: none;
+		float: right;
+		transform: translate(0px, -27px);
+	}
+
+	.bmodal-content {
+		color: black;
+		width: min(90%, 500px) !important;
+	}
+
+	.passwordInput {
+		padding-right: 30px;
+	}
+
+</style>
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<base href="/"/>
+	<link href="_content/Blazor.ContextMenu/blazorContextMenu.min.css" rel="stylesheet"/>
+	<link rel="stylesheet" href="CactusFrontEnd.styles.css"/>
+	<link rel="stylesheet" href="bootstrap/bootstrap.min.css"/>
+	<link rel="stylesheet" href="app.css"/>
+	<link rel="icon" type="image/png" href="favicon.png"/>
+	<script src="_content/Blazor.ContextMenu/blazorContextMenu.min.js"></script>
+	<HeadOutlet/>
+</head>
+
+<body>
+<Routes/>
+<script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

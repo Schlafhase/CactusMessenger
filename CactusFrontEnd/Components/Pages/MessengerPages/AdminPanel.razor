@@ -1,0 +1,276 @@
+﻿@page "/adminPanel"
+@rendermode InteractiveServer
+@inject IJSRuntime _jsRuntime;
+@using Messenger
+@using MessengerInterfaces
+@using Newtonsoft.Json
+@inherits AuthorizedPage
+
+<PageTitle>Control Panel</PageTitle>
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+
+<ModalDialog @ref="_dialog"
+             OverlayBackgroundColor="black"
+             OverlayOpacity="0.5"
+             CloseOnOverlayClick="true"
+             CloseOnEscapeKey="true"
+             ShowCloseButton="false">
+
+	<Header>
+		<h1 style="line-break: anywhere;">Delete
+			<strong>@(accounts.Where(acc => acc.Id == selectedAccount).ToArray()[0].UserName)</strong>?</h1>
+	</Header>
+	<Content>
+		<p style="color: red;">
+			This can't be undone.
+		</p>
+		<div>
+			<button style="float: left;" class="btn-cactus" @onclick="closeDeleteDialog">Nevermind</button>
+			<button style="float: right;" class="btn-cactus danger" @onclick="delete">
+				Delete @(accounts.Where(acc => acc.Id == selectedAccount).ToArray()[0].UserName)</button>
+		</div>
+		<div style="margin-top:70px;"><code>@error</code></div>
+	</Content>
+</ModalDialog>
+
+<ModalDialog @ref="_detailDialog"
+             OverlayBackgroundColor="black"
+             OverlayOpacity="0.5"
+             CloseOnOverlayClick="true"
+             CloseOnEscapeKey="true"
+             ShowCloseButton="false">
+
+	<Header>
+		<h1 style="line-break: anywhere;">
+			<strong>@(accounts.Where(acc => acc.Id == selectedAccount).ToArray()[0].UserName)</strong></h1>
+	</Header>
+	<Content>
+		<p>
+			@((MarkupString)listDetails(accounts.Where(acc => acc.Id == selectedAccount).ToArray()[0]))
+		</p>
+		<div>
+			<button class="btn-cactus" @onclick="closeDetailDialog">Close</button>
+		</div>
+	</Content>
+</ModalDialog>
+
+<style>
+	.bmodal-content {
+		width: auto !important;
+	}
+</style>
+
+<h1>Control Panel</h1>
+<div class="card-cactus" id="accounts">
+	<h2>Accounts</h2>
+	@foreach (Account account in accounts)
+	{
+		@if (!deletedAccounts.Contains(account.Id))
+		{
+			<div style="height: @(selectedAccount == account.Id ? "fit-content" : "72px");" class="accountCard">
+				<div @onclick="@(() => selectedAccount = account.Id)" class="accountMeta @account.Id">
+					<strong
+						class="accountName @(account.IsAdmin ? "admin" : "") @(account.Locked ? "locked" : "")">@account.UserName</strong><br/>
+					<span class="accountId">@account.Id</span>
+				</div>
+				<div class="accountMoreInfo">
+					<p>
+						@if (!string.IsNullOrWhiteSpace(account.Email))
+						{
+							<strong>Email address: </strong>
+							<span>@account.Email</span>
+
+							<br/>
+						}
+						<strong>Created at: </strong>
+						<span>@account.CreationDate</span>
+						<br/>
+						<strong>Balance: </strong>
+						<span>@account.Balance</span>
+					</p>
+					<div class="accountSettings">
+						<button class="btn-cactus danger" @onclick="openDeleteDialog"
+						        disabled="@(account.Id == CactusConstants.AdminId || account.Id == CactusConstants.DeletedId)">
+							Delete
+						</button>
+
+						<button class="btn-cactus" @onclick="openDetailDialog">
+							View Details
+						</button>
+
+					</div>
+				</div>
+			</div>
+		}
+	}
+</div>
+
+<script>
+	window.BlazorJSFunctions =
+		{
+			GetElementHeight: function (query) {
+				return document.querySelector(query).offsetHeight;
+			},
+			GetElementWidth: function (query) {
+				return document.querySelector(query).offsetWidth;
+			}
+		};
+</script>
+
+<style>
+	:root {
+		interpolate-size: allow-keywords;
+	}
+
+	body {
+		margin-bottom: 25px;
+	}
+
+	#accounts {
+		height: 700px;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		scrollbar-color: #4d0082 #1f0058;
+	}
+
+	.accountEmail {
+		float: right;
+	}
+
+	.accountMeta {
+		cursor: pointer;
+		padding-bottom: 15px;
+		border-bottom: 2px solid gray;
+	}
+
+	.accountMoreInfo {
+		margin-top: 15px;
+	}
+
+	.accountCard {
+		border: 2px solid darkmagenta;
+		background-color: rgba(255, 255, 255, 0.1);
+		padding: 10px 10px;
+		border-radius: 5px;
+		margin-bottom: 2px;
+		transition: height 0.6s;
+		overflow: hidden;
+	}
+
+	.accountId {
+		opacity: 0.5;
+		font-style: italic;
+	}
+
+	.admin::after {
+		font-weight: 500;
+		content: "Admin";
+		background-color: deepskyblue;
+		border-radius: 4px;
+		opacity: 1;
+		margin-left: 5px;
+		padding: 2px 5px;
+	}
+
+	.locked::after {
+		font-weight: 500;
+		content: "Locked";
+		background-color: orange;
+		border-radius: 4px;
+		opacity: 1;
+		margin-left: 5px;
+		padding: 2px 5px;
+	}
+</style>
+
+@code {
+	private List<Account> accounts = [];
+	private readonly List<Guid> deletedAccounts = [];
+	private Guid selectedAccount = Guid.Empty;
+	private ModalDialog _dialog;
+	private ModalDialog _detailDialog;
+	private string error = "";
+
+	private async Task openDeleteDialog()
+	{
+		error = "";
+		await _dialog.Open();
+	}
+
+	private async Task closeDeleteDialog()
+	{
+		await _dialog.Close();
+	}
+
+	private async Task openDetailDialog()
+	{
+		await _detailDialog.Open();
+	}
+
+	private async Task closeDetailDialog()
+	{
+		await _detailDialog.Close();
+	}
+
+	private static string listDetails(Account account) => JsonConvert.SerializeObject(account, Formatting.Indented).Replace("\n", "<br/>");
+
+	private async Task delete()
+	{
+		try
+		{
+			await messengerService.DeleteAccount(selectedAccount);
+			deletedAccounts.Add(selectedAccount);
+			await InvokeAsync(StateHasChanged);
+
+			try
+			{
+				selectedAccount = accounts[accounts.IndexOf(accounts.Find(acc => acc.Id == selectedAccount)!) + 1].Id;
+			}
+			catch (ArgumentOutOfRangeException)
+			{
+				selectedAccount = accounts[0].Id;
+			}
+
+			await _dialog.Close();
+		}
+		catch (Exception e)
+		{
+			error = e.Message;
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			selectedAccount = Guid.NewGuid();
+			await Initialize(() => navigationManager.NavigateTo("logout"));
+
+			if (user is null)
+			{
+				return;
+			}
+
+			if (!user.IsAdmin)
+			{
+				navigationManager.NavigateTo("");
+				return;
+			}
+
+			try
+			{
+				accounts = await messengerService.GetAllAccounts();
+				accounts.Sort((x, y) => x.UserName[0] - y.UserName[0]);
+				accounts = accounts
+				           .OrderByDescending(acc => acc.Locked)
+				           .ToList();
+				await InvokeAsync(StateHasChanged);
+			}
+			catch (Exception ex)
+			{
+				navigationManager.NavigateTo($"error?error={ex.Message}");
+			}
+		}
+	}
+
+}

@@ -1,0 +1,105 @@
+﻿@page "/channel/{channelIdAsString}/addUser"
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStore
+@using CactusFrontEnd.Events
+@using Messenger
+@using MessengerInterfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inherits AuthorizedPage
+
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+
+<h3 style="word-break:break-word; overflow:hidden">@header</h3>
+<span>Add users by their username </span>
+<form @onsubmit="addUser">
+	<input type="text" id="usernameInput" @bind-value="@userName"/>
+	<input type="submit" id="addUserButton" value="Add"/>
+</form>
+<span class="errorSpan">@addUserErrorMessage</span>
+<p>Users:</p>
+<ul>
+	@foreach (Account user in users)
+	{
+		<li>
+			<span>@($"{user.UserName} ({user.Id}) ")</span><input type="button" value="Remove"
+			                                                      @onclick=@(() => remove(user))/>
+		</li>
+	}
+</ul>
+<input type="button" value="Add users" @onclick="@addUsersClick"/>
+
+@code {
+	[Parameter] public string ChannelIdAsString { get; set; }
+	[Inject] EventService eventService { get; set; }
+	ChannelDTO_Output channel;
+	readonly List<Account> users = [];
+	string header = "Loading...";
+	string userName;
+	string errorMessage = string.Empty;
+	string addUserErrorMessage = string.Empty;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Initialize(() => navigationManager.NavigateTo($"logout?redirectUrl=channel/{ChannelIdAsString}/addUser"));
+			channel = await messengerService.GetChannel(Guid.Parse(ChannelIdAsString));
+			header = $"Add user to {channel.Name}";
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task addUser()
+	{
+		try
+		{
+			if (userName == "Deleted User")
+			{
+				throw new KeyNotFoundException();
+			}
+
+			Account user = await messengerService.GetAccountByUsername(userName);
+			userName = "";
+
+			if (users.Where(usr => usr.Id == user.Id).Count() > 0)
+			{
+				throw new ArgumentException("User already added");
+			}
+
+			users.Add(user);
+			addUserErrorMessage = "";
+		}
+		catch (KeyNotFoundException)
+		{
+			addUserErrorMessage = "User not Found";
+		}
+		catch (ArgumentException ex)
+		{
+			addUserErrorMessage = ex.Message;
+		}
+		finally
+		{
+			StateHasChanged();
+		}
+	}
+
+	private void remove(Account user)
+	{
+		if (user.Id != signedToken.Token.UserId)
+		{
+			users.Remove(user);
+			StateHasChanged();
+		}
+	}
+
+	private async Task addUsersClick()
+	{
+		foreach (Account user in users)
+		{
+			await messengerService.AddUserToChannel(user.Id, channel.Id);
+		}
+
+		navigationManager.NavigateTo($"channel/{channel.Id}");
+	}
+
+}

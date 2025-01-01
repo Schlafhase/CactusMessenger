@@ -1,0 +1,35 @@
+﻿@page "/emails"
+
+<PageTitle>Email Addresses</PageTitle>
+
+<h3>Adding an email address to your account allows you to...</h3>
+
+<ul>
+	<li>be notified when your account request was processed</li>
+	<li class="wip">be notified when you receive a new message</li>
+	<li class="wip">reset your password</li>
+</ul>
+
+<h3>Temporary Email Addresses</h3>
+When requesting an account, you don't have to verify your email. That is the case because in order to verify your email you need to log in which you can't do until your request got accepted.
+As soon as your account creation request gets accepted you will receive two emails. One of them notifies you that your request has been accepted and the other one asks you to verify your email address.
+You will have to verify your email after your account was unlocked to be able to add it to your account.
+
+<style>
+	.wip {
+		opacity: 0.5;
+	}
+
+	.wip::before {
+		content: "Work in progress";
+		background-color: orange;
+		border-radius: 4px;
+		opacity: 1;
+		margin-right: 5px;
+		padding: 0px 5px;
+	}
+</style>
+
+@code {
+
+}

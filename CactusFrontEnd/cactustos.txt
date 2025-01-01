@@ -1,0 +1,39 @@
+Cactus Terms of Service
+
+Message Content
+Do not use offensive words in your messages. You have the responsibility to ensure that you have the right to send any content you send and that the content is lawful.
+
+License
+Everyone has the right to use Cactus Messenger. If you wish to get the code, you can ask me (Contacts: https://schlafhase.uk) for it and I will most likely give it to you.
+If you have the code you may:
+-modify it
+-send copies to someone else
+-publish a modified version
+and you may not:
+-sell it
+-say you wrote it
+All copies of the code must include Credits mentioning the original version and all copies must have "Cactus" in their names (to respect the Holy Cactus Ice Cream).
+
+Other restrictions
+-Do not use Cactus Messenger to harm yourself or others.
+-Do not use Cactus Messenger to harm Cactus Messenger.
+-Do not use Cactus Messenger to do anything else that is illegal.
+
+The Holy Cactus Ice Cream
+By creating an Account, you agree to believe in and respect the Holy Cactus Ice Cream.
+
+Credits
+Coders:
+Frontend:
+Linus Schneeberg
+UI Designers (css and HTML):
+Linus Schneeberg
+Backend:
+Linus Schneeberg
+Moritz Becker
+Database Provider and App Service Host:
+Microsoft Azure
+Framework:
+Blazor
+Special Thanks:
+Thank you Finn for always supporting Cactus Messenger.

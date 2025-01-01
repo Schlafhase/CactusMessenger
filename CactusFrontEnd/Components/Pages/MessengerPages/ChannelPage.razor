@@ -1,0 +1,642 @@
+﻿@page "/channel/{channelIdAsString}"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ProtectedLocalStorage ProtectedLocalStore
+@inject IJSRuntime jsRuntime
+@inject DiscordService discordService
+@using System.Text.RegularExpressions
+@using System.Web
+@using CactusFrontEnd.Utils
+@using Discord
+@using Messenger
+@using MessengerInterfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using OptimisedImages
+@using System.Drawing
+@using System.Drawing.Imaging
+@inherits AuthorizedPage
+
+<PageTitle>@((channel is not null ? channel.Name : "Channel") + " - Cactus Messenger")</PageTitle>
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+<Alert
+	Type="@NotificationTypes.Warning"
+	@bind-IsVisible="@alertShown">
+	<Content>
+		@((MarkupString)errorText)
+	</Content>
+</Alert>
+<div class="chatContainer">
+	<div class="chat">
+		<div class="channelName">
+			<h3>@header</h3>
+			<p style="opacity: 0.5">@channelMembers</p>
+		</div>
+		<ul>
+			@foreach ((int i, MessageDTO_Output message) in Utils.Enumerate(messages.ToList()))
+			{
+				<li class=@(message.AuthorId == user.Id ? "selfSentMessage message" : "message")>
+
+					<ContextMenuTrigger id=@message.Id.ToString()
+					                    MenuId=@(message.AuthorId == user.Id || user.IsAdmin ? "messageContextMenuWithDelete" : "messageContextMenu")>
+						@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
+						{
+							<span class="authorName">@message.AuthorName</span>
+
+							@if (message.AuthorIsAdmin)
+							{
+								<span class="adminBadge" title="Admin/Developer"></span>
+							}
+
+							<span class="timestamp"
+							      title=@(message.DateTime.AddHours(timeZoneOffset).ToString())>@Utils.Relativize(message.DateTime.AddHours(timeZoneOffset), DateTime.UtcNow.AddHours(timeZoneOffset))</span>
+							<br/>
+						}
+						@if (message.Content.StartsWith("(img)"))
+						{
+							<div
+								style="background-image: url(Images/image_load.png); width: min(100%, 350px); height: 350px;border-radius:10px; margin-bottom: 10px; padding:0">
+								<img style="width: 100%; height: 100%; padding:0; border-radius:10px"
+								     id="@($"img-{message.Id}")"
+								     src="@(imageSources.ContainsKey(message.Id) ? imageSources[message.Id] : "")"/>
+							</div>
+						}
+						else
+						{
+							<div class="messageContent">
+								<span class="messageContent">@((MarkupString)postProcessMessage(message.Content))</span>
+							</div>
+						}
+						@if (getEmbedUrl(message.Content) is not null)
+						{
+							<iframe style="border-radius: 20px;"
+							        src=@getEmbedUrl(message.Content) allowfullscreen>
+							</iframe>
+						}
+					</ContextMenuTrigger>
+				</li>
+			}
+		</ul>
+		<div id="messageInput">
+			<form @onsubmit="@send">
+				<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg.jpeg,.JPG" OnChange="loadImage"
+				           @oncancel="aborted" style="transform: translate(0.5rem, 0);"></InputFile>
+				<span style="float: right; color: red; font-style: italic;">@messageSendError</span>
+				<input
+					id="messageInputTextBox" autocomplete="off" type="text" @bind-value="messageContent"/>
+				<input
+					disabled="@sendDisabled" type="submit" id="sendButton"
+					value=@(sendDisabled ? "Sending..." : "Send")/>
+			</form>
+		</div>
+	</div>
+</div>
+
+<ContextMenu Id="messageContextMenu" Template="cactusTemplate">
+	<Item OnClick="@copyMessageIdClick">Copy Id</Item>
+</ContextMenu>
+<ContextMenu Id="messageContextMenuWithDelete" Template="cactusTemplate">
+	<Item OnClick="@deleteMessageClick">Delete Message</Item>
+	<Item OnClick="@copyMessageIdClick">Copy Id</Item>
+</ContextMenu>
+
+<style>
+
+	#fileInput::file-selector-button {
+		height: 23px;
+		margin: 5px 0;
+		padding: 2px 16px;
+		appearance: none;
+		background-color: midnightblue;
+		border: 1px solid rgba(27, 31, 35, .15);
+		border-radius: 6px;
+		box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+		box-sizing: border-box;
+		color: #fff;
+		cursor: pointer;
+		display: inline-block;
+		font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		position: relative;
+		text-align: center;
+		text-decoration: none;
+		user-select: none;
+		-webkit-user-select: none;
+		touch-action: manipulation;
+		vertical-align: middle;
+		white-space: nowrap;
+	}
+
+	@@media (min-width: 640.98px) {
+		.chat {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			top: 3.5rem;
+			width: calc(100% - 250px);
+			left: 250px;
+			right: 0%;
+			bottom: 10px;
+		}
+	}
+
+	@@media (max-width: 641px) {
+		.chat {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			top: 7rem;
+			width: 100%;
+			left: 0;
+			right: 0%;
+			bottom: 10px;
+		}
+
+	}
+
+
+	.chat {
+		scrollbar-color: #000971 #000148;
+		z-index: -1;
+	}
+
+	.chat > ul {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column-reverse;
+		overflow: auto;
+		overflow-x: hidden;
+		word-break: break-word;
+		list-style-type: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.authorName {
+		font-weight: bold;
+	}
+
+	.chat .messageContent {
+		text-indent: -0.35em;
+		opacity: 0.9;
+	}
+
+	.chat .message .messageContent > span > * {
+		padding-left: 0;
+	}
+
+	.chat .channelName {
+		background-color: rgba(0, 0, 0, 0.4);
+		padding-top: 1rem;
+		padding-inline: 1rem;
+		height: 85px;
+	}
+
+	.chat .channelName h3, p {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	.chat .channelName p {
+		transform: translate(0, -0.5em);
+	}
+
+	.timestamp {
+		opacity: 0.5;
+		word-break: keep-all;
+		text-indent: -1.35em;
+	}
+
+	#messageInput {
+		width: 100%;
+	}
+
+	#messageInputTextBox {
+		transform: translate(0.5rem, 0);
+		padding-inline: 1rem;
+		padding-top: 0;
+		box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+		width: calc((100% - 100px) - 1rem);
+		border-radius: 6px;
+		height: 35px;
+		background-color: #2d1e34;
+		color: white;
+	}
+
+	#sendButton {
+		transform: translate(0.5rem, 0);
+		width: 100px;
+		background-color: #4f0038;
+	}
+
+	.chat .message * {
+		padding-left: 5px;
+		padding-top: 1px;
+		padding-bottom: 1px;
+		color: white;
+	}
+
+	.chat .message {
+		padding-inline: 1rem;
+	}
+
+	.chat .message iframe {
+		position: relative;
+		z-index: 0;
+		width: min(620px, 100%);
+		height: 415px;
+	}
+
+	.chat .selfSentMessage * {
+		color: lightgreen;
+	}
+
+	.chat .message:hover {
+		background-color: rgba(255, 255, 255, 0.02);
+	}
+
+	#sendButton {
+		height: 35px;
+		appearance: none;
+		background-color: #000aca;
+		border: 1px solid rgba(27, 31, 35, .15);
+		border-radius: 6px;
+		box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+		box-sizing: border-box;
+		color: #fff;
+		cursor: pointer;
+		display: inline-block;
+		font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		padding: 6px 16px;
+		position: relative;
+		text-align: center;
+		text-decoration: none;
+		user-select: none;
+		-webkit-user-select: none;
+		touch-action: manipulation;
+		vertical-align: middle;
+		white-space: nowrap;
+	}
+
+	#sendButton:focus:not(:focus-visible):not(.focus-visible) {
+		box-shadow: none;
+		outline: none;
+	}
+
+	#sendButton:hover {
+		background-color: #00559d;
+	}
+
+	#sendButton:focus {
+		box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+		outline: none;
+	}
+
+	#sendButton:disabled {
+		background-color: #333062;
+		border-color: rgba(27, 31, 35, .1);
+		color: rgba(255, 255, 255, .8);
+		cursor: default;
+	}
+
+	#sendButton:active {
+		background-color: #0028ac;
+		box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+	}
+
+	.adminBadge {
+		background-image: url(Images/admin_icon.svg);
+		display: inline-block;
+		position: relative;
+		width: 1.25rem;
+		height: 1.25rem;
+		top: 5px;
+		background-size: cover;
+	}
+</style>
+
+<script>
+	function onPaste(e) {
+		let inputFile = document.getElementById("fileInput");
+		inputFile.files = e.clipboardData.files;
+		const event = new Event('change', {bubbles: true});
+		inputFile.dispatchEvent(event);
+	}
+
+	function dropHandler(e) {
+		e.preventDefault();
+		let inputFile = document.getElementById("fileInput");
+		inputFile.files = e.dataTransfer.files;
+		const event = new Event('change', {bubbles: true});
+		inputFile.dispatchEvent(event);
+	}
+
+	document.getElementById("messageInputTextBox").addEventListener("paste", onPaste);
+	document.body.addEventListener("drop", dropHandler);
+
+	function dispose() {
+		document.getElementById("messageInputTextBox").removeEventListener("paste", onPaste);
+		document.body.removeEventListener("drop", dropHandler);
+	}
+
+	window.localDate = () => {
+		let ldCurrentDate = new Date();
+		return ldCurrentDate.getFullYear() +
+			"-" + String(ldCurrentDate.getMonth() + 1).padStart(2, '0') +
+			"-" + String(ldCurrentDate.getDate()).padStart(2, '0') +
+			"T" +
+			String(ldCurrentDate.getHours()).padStart(2, '0') +
+			":" + String(ldCurrentDate.getMinutes()).padStart(2, '0') +
+			":" + String(ldCurrentDate.getSeconds()).padStart(2, '0');
+	};
+	window.utcDate = () => {
+		let ldCurrentDate = new Date();
+		return ldCurrentDate.getUTCFullYear() +
+			"-" + String(ldCurrentDate.getUTCMonth() + 1).padStart(2, '0') +
+			"-" + String(ldCurrentDate.getUTCDate()).padStart(2, '0') +
+			"T" +
+			String(ldCurrentDate.getUTCHours()).padStart(2, '0') +
+			":" + String(ldCurrentDate.getUTCMinutes()).padStart(2, '0') +
+			":" + String(ldCurrentDate.getUTCSeconds()).padStart(2, '0');
+	};
+	window.timeZoneOffset = () => {
+		return new Date().getTimezoneOffset() / 60;
+	};
+</script>
+
+@code {
+	[Parameter] public string ChannelIdAsString { get; set; }
+	MessageDTO_Output[] messages = [];
+	List<string> messageDisplays = [];
+	ChannelDTO_Output channel;
+	string header = "Loading...";
+	string channelMembers = "";
+	string messageContent;
+	int timeZoneOffset;
+	Action<ChannelDTO_Output> onMessageAction;
+	private string _inputFileId = Guid.NewGuid().ToString();
+	IBrowserFile img;
+	bool imgSelected;
+	Timer refreshTimeStampTimer;
+	readonly Regex youtubeRegex = new(@"https?://(www\.)?youtu(.be|be.com)/((watch(\?v=|/))|shorts/)?([A-Za-z0-9_]+)");
+	readonly Regex urlRegex = new(@"(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))");
+	bool sendDisabled;
+	private readonly Dictionary<Guid, string> imageSources = [];
+	private string messageSendError = "";
+
+	private bool _disposed;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender && !_disposed)
+		{
+			timeZoneOffset = await jsRuntime.InvokeAsync<int>("timeZoneOffset");
+			eventService.ChannelHasChanged();
+
+			timeZoneOffset *= -1;
+			TimeSpan startTimeSpan = TimeSpan.Zero;
+			TimeSpan periodTimeSpan = TimeSpan.FromMinutes(1);
+
+			refreshTimeStampTimer = new Timer(async _ => { await InvokeAsync(StateHasChanged); }, null, startTimeSpan, periodTimeSpan);
+
+			onMessageAction = async channel =>
+			{
+				if (channel.Users.Contains(user.Id) || channel.Id == Guid.Parse(ChannelIdAsString))
+				{
+					await refresh();
+				}
+			};
+			messengerService.OnMessage += onMessageAction;
+
+			await Initialize(authFailed);
+
+			if (signedToken is null)
+			{
+				return;
+			}
+
+			try
+			{
+				channel = await messengerService.GetChannel(Guid.Parse(ChannelIdAsString));
+				channelMembers = string.Join(", ", channel.UserNames);
+				header = channel.Name ?? channelMembers;
+				StateHasChanged();
+			}
+			catch (UnauthorizedAccessException)
+			{
+				navigationManager.NavigateTo("Error/Unauthorized");
+				return;
+			}
+			catch (Exception ex)
+			{
+				if (ex is KeyNotFoundException or FormatException)
+				{
+					navigationManager.NavigateTo("Error/NotFound");
+				}
+				else
+				{
+					throw;
+				}
+
+				return;
+			}
+
+			await refresh();
+		}
+	}
+
+	private void authFailed()
+	{
+		navigationManager.NavigateTo($"logout?redirectUrl=channel/{ChannelIdAsString}");
+	}
+
+	private Task aborted()
+	{
+		imgSelected = false;
+		return Task.CompletedTask;
+	}
+
+	private Task loadImage(InputFileChangeEventArgs e)
+	{
+		img = e.File;
+		imgSelected = true;
+		return Task.CompletedTask;
+	}
+
+	public static byte[] ReadFully(Stream input)
+	{
+		byte[] buffer = new byte[16 * 1024];
+
+		using MemoryStream ms = new();
+
+		int read;
+
+		while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+		{
+			ms.Write(buffer, 0, read);
+		}
+
+		return ms.ToArray();
+	}
+
+	private async Task send()
+	{
+		if (!sendDisabled)
+		{
+			sendDisabled = true;
+
+			if (!string.IsNullOrWhiteSpace(messageContent) && messageContent.Length <= 5000)
+			{
+				if (messageContent.StartsWith("(img)"))
+				{
+					messageContent = @"\" + messageContent;
+				}
+
+				Message msg = new(Guid.NewGuid(), messageContent, DateTime.UtcNow, user.Id, channel.Id);
+				messageContent = "";
+				await messengerService.PostMessage(msg);
+
+				if (channel.Id == CactusConstants.GlobalChannelId)
+				{
+					await discordService.SendCactusMessage(new MessageDTO_Output(msg, user.UserName, user.IsAdmin, channel.Name));
+				}
+
+				messageSendError = "";
+			}
+			else
+			{
+				messageSendError = "Message was empty or too long (max message length: 500 characters)";
+			}
+
+			if (imgSelected)
+			{
+				try
+				{
+					using MemoryStream ms = new();
+					await img.OpenReadStream(15728640L).CopyToAsync(ms);
+					using Image image = Image.FromStream(ms);
+					Optimg opt = Optimg.FromImage(image);
+					string compressedImage = opt.Compress();
+					Message msg = new(Guid.NewGuid(), $"(img){compressedImage}", DateTime.UtcNow, user.Id, channel.Id);
+					await messengerService.PostMessage(msg);
+					messageSendError = "";
+				}
+				catch
+				{
+					messageSendError = "Failed to send image. This might be caused by sending an unaccepted file format or sending a too large image. (accepted file formats: png, jpg, jpeg; max file size: 15mb)";
+				}
+
+				imgSelected = false;
+				_inputFileId = Guid.NewGuid().ToString();
+			}
+
+			sendDisabled = false;
+		}
+	}
+
+	private async Task refresh()
+	{
+		try
+		{
+			messages = await messengerService.GetAllMessagesInChannel(channel.Id);
+			messages = messages.OrderByDescending(o => o.DateTime).ToArray();
+			Thread imageLoadThread = new(async () =>
+			{
+				Thread.CurrentThread.IsBackground = true;
+
+				foreach (MessageDTO_Output message in messages)
+				{
+					if (message.Content.StartsWith("(img)") && !imageSources.ContainsKey(message.Id))
+					{
+						imageSources[message.Id] = getImage(message.Content);
+						await InvokeAsync(StateHasChanged);
+					}
+				}
+			});
+			imageLoadThread.Start();
+			await InvokeAsync(StateHasChanged);
+		}
+		catch { }
+	}
+
+	public void Dispose()
+	{
+		_disposed = true;
+
+		messengerService.OnMessage -= onMessageAction;
+		refreshTimeStampTimer?.Dispose();
+		imageSources.Clear();
+
+		try
+		{
+			messengerService.UpdateLastRead(channel.Id, user.Id, DateTime.UtcNow);
+		}
+		catch (NullReferenceException)
+		{
+			// Do nothing
+		}
+	}
+
+	private async Task deleteMessageClick(ItemClickEventArgs e)
+	{
+		string messageId = e.ContextMenuTrigger.Id;
+		await messengerService.DeleteMessage(Guid.Parse(messageId));
+	}
+
+	private async void copyMessageIdClick(ItemClickEventArgs e)
+	{
+		await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", e.ContextMenuTrigger.Id);
+	}
+
+	private string? getEmbedUrl(string message)
+	{
+		MatchCollection youtubeMatch = youtubeRegex.Matches(message);
+
+		if (youtubeMatch.Count == 0)
+		{
+			return null;
+		}
+
+		return $"https://youtube.com/embed/{youtubeMatch[0].Groups[6].Value}?wmode=transparent";
+	}
+
+	private string postProcessMessage(string message)
+	{
+		string newMessage = message;
+
+		// Replace all URLs with clickable links
+		newMessage = urlRegex.Replace(newMessage, "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"$1\">$1</a>");
+		// Revert escaped image tags
+		newMessage = newMessage.Replace(@"\(img)", "(img)");
+		return newMessage;
+	}
+
+	private static string getImage(string content)
+	{
+		try
+		{
+			string data = content[5..];
+			Optimg optimg = Optimg.FromString(data);
+			Bitmap img = optimg.ToImage();
+			byte[] bytes;
+
+			using (MemoryStream stream = new())
+			{
+				img.Save(stream, ImageFormat.Png);
+				bytes = stream.ToArray();
+			}
+
+			string b64String = Convert.ToBase64String(bytes);
+			return "data:image/png;base64," + b64String;
+		}
+		catch
+		{
+			return "";
+		}
+	}
+}

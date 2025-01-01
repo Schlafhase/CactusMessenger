@@ -1,0 +1,202 @@
+﻿@page "/createChannel"
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStore
+@using CactusFrontEnd.Events
+@using Messenger
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inherits AuthorizedPage
+
+<PageTitle>Create Channel</PageTitle>
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+
+<h1>Create Channel</h1>
+<div id="userSelection">
+	<span>Add users by their username </span>
+	<form @onsubmit="@addUser">
+		<input class="form-control" type="text" id="usernameInput" @bind-value="@userName"/>
+		<input class="btn-cactus" type="submit" id="addUserButton" value="Add"/>
+	</form>
+	<span class="errorSpan">@addUserErrorMessage</span>
+	<br/>
+	<b>Users:</b>
+	<ul>
+		@foreach (Account member in users)
+		{
+			<li>
+				@if (member.Id != user.Id)
+				{
+					<span>@($"{member.UserName}")</span>
+					<input class="remove" type="button" value="Remove" @onclick=@(() => remove(member))/>
+				}
+				else
+				{
+					<span>@($"{member.UserName} (You)")</span>
+				}
+			</li>
+		}
+	</ul>
+	<span>Name of the Channel:</span><br/>
+	<form @onsubmit="@create">
+		<input class="form-control" type="text" @bind-value="@channelName"/>
+		<input class="btn-cactus primary" type="submit" value="Create"/>
+	</form>
+	<span class="errorSpan">@errorMessage</span>
+</div>
+<Alert Type="@NotificationTypes.Warning"
+       @bind-IsVisible="@alertShown">
+	<Content>
+		@((MarkupString)errorText)
+	</Content>
+</Alert>
+
+<style>
+	ul {
+		list-style: none;
+		padding-left: 0px;
+	}
+
+	li {
+		border: 2px solid darkmagenta;
+		background-color: rgba(255, 255, 255, 0.1);
+		padding: 10px 10px;
+		border-radius: 5px;
+	}
+
+	.remove {
+		color: white;
+		float: right;
+		margin: auto 0;
+		height: 25px;
+		border: none;
+		background-color: red;
+		border-radius: 5px;
+		font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+		font-weight: 500;
+		text-align: center;
+	}
+
+	#userSelection {
+		width: min(100%, 700px);
+		background-color: #13011c;
+		border-radius: 15px;
+		padding: 20px;
+		box-shadow: 0px 0px 15px magenta;
+	}
+
+	input[type=submit] {
+		width: 80px;
+		float: right;
+		transform: translate(0px, -38px);
+		height: 38px;
+	}
+
+	.form-control {
+		width: calc(100% - 80px);
+	}
+</style>
+
+@code {
+	[Inject] EventService eventService { get; set; }
+	readonly List<Account> users = [];
+	string userName;
+	string channelName;
+	string errorMessage = string.Empty;
+	string addUserErrorMessage = string.Empty;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Initialize(() => navigationManager.NavigateTo("logout?redirectUrl=createChannel"));
+
+			if (signedToken is not null)
+			{
+				Account user = await messengerService.GetAccount(signedToken.Token.UserId);
+				users.Add(user);
+				StateHasChanged();
+			}
+		}
+	}
+
+	private async Task addUser()
+	{
+		try
+		{
+			if (userName == "Deleted User")
+			{
+				throw new KeyNotFoundException();
+			}
+
+			Account user = await messengerService.GetAccountByUsername(userName);
+			userName = "";
+
+			if (users.Where(usr => usr.Id == user.Id).Count() > 0)
+			{
+				throw new ArgumentException("User already added");
+			}
+
+			users.Add(user);
+			addUserErrorMessage = "";
+		}
+		catch (KeyNotFoundException)
+		{
+			addUserErrorMessage = "User not Found";
+		}
+		catch (ArgumentException ex)
+		{
+			addUserErrorMessage = ex.Message;
+		}
+		finally
+		{
+			StateHasChanged();
+		}
+	}
+
+	private void remove(Account user)
+	{
+		if (user.Id != signedToken.Token.UserId)
+		{
+			users.Remove(user);
+			StateHasChanged();
+		}
+	}
+
+	private async void create()
+	{
+		try
+		{
+			if (string.IsNullOrWhiteSpace(channelName))
+			{
+				throw new ArgumentException("Please provide a channel name.");
+			}
+
+			if (channelName.Length > 40)
+			{
+				throw new ArgumentException("Channel name can only be 40 characters long.");
+			}
+
+			if (users.Count <= 1)
+			{
+				throw new ArgumentException("Please add at least one user.");
+			}
+		}
+		catch (ArgumentException ex)
+		{
+			errorMessage = ex.Message;
+			StateHasChanged();
+			return;
+		}
+
+		try
+		{
+			Guid channelId = await messengerService.CreateChannel(users.Select(usr => usr.Id).ToHashSet(), channelName);
+			navigationManager.NavigateTo($"channel/{channelId.ToString()}");
+		}
+		catch (Exception ex)
+		{
+			errorText = ex.Message;
+			alertShown = true;
+		}
+	}
+
+}

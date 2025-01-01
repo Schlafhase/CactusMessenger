@@ -1,0 +1,220 @@
+﻿@page "/settings"
+@rendermode InteractiveServer
+@using System.Text.RegularExpressions
+@using EmailService
+@inherits AuthorizedPage
+@inject EmailService emailService
+
+<PageTitle>Settings</PageTitle>
+<StreakAlert @ref="_streakAlert"></StreakAlert>
+<ModalDialog @ref="_dialog"
+             OverlayBackgroundColor="black"
+             OverlayOpacity="0.5"
+             CloseOnOverlayClick="true"
+             CloseOnEscapeKey="true"
+             ShowCloseButton="false">
+	<Header>
+		<h4>@(string.IsNullOrWhiteSpace(user.Email) ? "Add Email Address" : "Change Email Address")</h4>
+	</Header>
+	<Content>
+		Enter your @(string.IsNullOrWhiteSpace(user.Email) ? "" : "new ")email address: <input class="form-control"
+		                                                                                       @bind="email">
+		<span class="errorSpan">@(invalidEmailAddress ? "Please provide a valid email address." : "")</span>
+		<br/>
+		<button style="float: left;" class="btn-cactus danger" @onclick="emailCancel">Cancel</button>
+		<button class="btn-cactus primary" style="float:right;"
+		        @onclick="emailAdd">@(string.IsNullOrWhiteSpace(user.Email) ? "Add Email" : "Change Email")</button>
+	</Content>
+</ModalDialog>
+
+<ModalDialog @ref="_dialogPWChange"
+             OverlayBackgroundColor="black"
+             OverlayOpacity="0.5"
+             CloseOnOverlayClick="true"
+             CloseOnEscapeKey="true"
+             ShowCloseButton="false">
+	<Header>
+		<h4>Change Password</h4>
+	</Header>
+	<Content>
+		Enter your current password: <input type="@(showOldPassword ? "text" : "password")"
+		                                    class="form-control passwordInput" @bind="oldPassword"><input
+			class="showPassword" type="button"
+			style="background: url(Images/@(showOldPassword ? "eye-icon.svg" : "eye-blind-icon.svg")) no-repeat; background-size: 20px;"
+			@onclick="@(() => showOldPassword = !showOldPassword)"></input>
+		<span class="errorSpan">@(wrongPassword ? "Wrong password." : "")</span><br/>
+		Enter your new password: <input type="@(showNewPassword ? "text" : "password")"
+		                                class="form-control passwordInput" @bind="newPassword"><input
+			class="showPassword" type="button"
+			style="background: url(Images/@(showNewPassword ? "eye-icon.svg" : "eye-blind-icon.svg")) no-repeat; background-size: 20px;"
+			@onclick="@(() => showNewPassword = !showNewPassword)"></input>
+		<span class="errorSpan">@(invalidPassword ? "Please provide a password with at least 4 characters." : "")</span><br/>
+		<button style="float: left;" class="btn-cactus danger" @onclick="changePWCancel">Cancel</button>
+		<button class="btn-cactus primary" style="float:right;" @onclick="changePW">Change</button>
+	</Content>
+</ModalDialog>
+
+<h1>Settings</h1>
+<div class="settingSection" id="accountSettings">
+	<h2>Account</h2>
+	@if (user is not null)
+	{
+		@if (!string.IsNullOrWhiteSpace(user.Email))
+		{
+			<b>Email: </b>
+
+			@user.Email
+			<br/>
+			<button class="btn-cactus" @onclick="addEmail">Change Email</button>
+			<button class="btn-cactus danger" @onclick="removeEmail">Remove Email</button>
+		}
+		else
+		{
+			<button class="btn-cactus" @onclick="addEmail">Add Email</button>
+		}
+
+		<Alert Type="NotificationTypes.Success"
+		       @bind-IsVisible="emailAlertVisible"
+		       ShowCloseButton="false">
+			<Content>
+				An email with a verification link has been sent to your email address.
+			</Content>
+		</Alert>
+		<br/>
+		<button class="btn-cactus" @onclick="@onChangePWButton">Change Password</button>
+		<br/>
+	}
+	else
+	{
+		<p>Loading...</p>
+	}
+</div>
+
+<style>
+	button {
+		margin: 10px 0;
+	}
+
+	.settingSection {
+		background-color: #13011c;
+		border-radius: 15px;
+		padding: 10px;
+		box-shadow: 0px 0px 15px magenta;
+	}
+</style>
+
+@code {
+	private string email = "";
+	private string oldPassword = "";
+	private string newPassword = "";
+	private bool showOldPassword;
+	private bool showNewPassword;
+	private bool wrongPassword;
+	private bool invalidPassword;
+	private ModalDialog _dialog;
+	private ModalDialog _dialogPWChange;
+	private bool emailAlertVisible;
+	private bool invalidEmailAddress;
+	private readonly Regex emailRegex = new(@"(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Initialize(() => navigationManager.NavigateTo("logout?redirectUrl=settings"));
+
+			if (user is null)
+			{
+				return;
+			}
+
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task emailCancel()
+	{
+		await _dialog.Close();
+		email = "";
+		invalidEmailAddress = false;
+		showOldPassword = false;
+		showNewPassword = false;
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task onChangePWButton()
+	{
+		await _dialogPWChange.Open();
+	}
+
+	private async Task changePWCancel()
+	{
+		await _dialogPWChange.Close();
+		oldPassword = "";
+		newPassword = "";
+		wrongPassword = false;
+		invalidPassword = false;
+	}
+
+	private async Task changePW()
+	{
+		if (await messengerService.LoginAccount(user.Id, oldPassword))
+		{
+			wrongPassword = false;
+
+			if (newPassword.Length >= 4)
+			{
+				invalidPassword = false;
+				await messengerService.ChangePW(user.Id, newPassword);
+				await _dialogPWChange.Close();
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			invalidPassword = true;
+		}
+		else
+		{
+			wrongPassword = true;
+		}
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+
+	private async Task emailAdd()
+	{
+		if (!string.IsNullOrWhiteSpace(email))
+		{
+			MatchCollection emailMatches = emailRegex.Matches(email.ToLower());
+
+			if (emailMatches.Count != 0 && emailMatches[0].Value == email.ToLower())
+			{
+				emailService.Send(email, "Verify your email address", EmailService.GenerateVerificationEmail(user.Id, email));
+				emailAlertVisible = true;
+				email = "";
+				invalidEmailAddress = false;
+				await InvokeAsync(StateHasChanged);
+				await _dialog.Close();
+				return;
+			}
+		}
+
+		invalidEmailAddress = true;
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task removeEmail()
+	{
+		await messengerService.EditAccountEmail(user.Id, "");
+		user.Email = "";
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task addEmail()
+	{
+		emailAlertVisible = false;
+		await _dialog.Open();
+	}
+
+}

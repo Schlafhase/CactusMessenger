@@ -1,0 +1,121 @@
+﻿@page "/reviewAccount"
+@inject EmailService emailService
+@rendermode InteractiveServer
+@using EmailService
+@using Messenger
+@inherits AuthorizedPage
+
+<PageTitle>Review Account</PageTitle>
+<h1>Review Account</h1>
+<p>@text</p>
+
+@code {
+	private string text;
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "user")]
+	public string userId { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "action")]
+	public string action { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "email")]
+	public string email { get; set; }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Initialize(() => navigationManager.NavigateTo($"logout?redirectUrl=reviewAccount?user={userId}&action={action}&email={email}"));
+
+			if (user is null)
+			{
+				return;
+			}
+
+			if (!user.IsAdmin)
+			{
+				text = "No permission to view this page";
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(action))
+			{
+				text = "Invalid query";
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			Account account;
+			Guid guid;
+
+			try
+			{
+				guid = Guid.Parse(userId);
+			}
+			catch (FormatException ex)
+			{
+				text = ex.Message;
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			try
+			{
+				account = await messengerService.GetAccount(guid);
+			}
+			catch (Exception ex)
+			{
+				text = ex.Message;
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			if (account is { Locked: false, IsDemo: false })
+			{
+				text = "Account is not under review";
+				await InvokeAsync(StateHasChanged);
+				return;
+			}
+
+			switch (action)
+			{
+				case "accept":
+				{
+					account.Locked = false;
+					await messengerService.EditAccountLock(guid, false);
+
+					if (!string.IsNullOrWhiteSpace(email))
+					{
+						emailService.Send(email, "Account request accepted", EmailService.GenerateAccountReviewEmail(true));
+						emailService.Send(email, "Verify your email address", EmailService.GenerateVerificationEmail(guid, email));
+					}
+
+					text = "The account was unlocked successfully!";
+					break;
+				}
+				case "deny":
+				{
+					await messengerService.DeleteAccount(guid);
+
+					if (!string.IsNullOrWhiteSpace(email))
+					{
+						emailService.Send(email, "Account request denied", EmailService.GenerateAccountReviewEmail(false));
+					}
+
+					text = "The account was deleted successfully!";
+					break;
+				}
+				default:
+					text = "Invalid action";
+					break;
+			}
+
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+}

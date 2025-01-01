@@ -1,0 +1,14 @@
+﻿@page "/pay"
+@rendermode InteractiveServer
+@inherits AuthorizedPage
+<h3>Pay</h3>
+
+<p>Balance: @(user is null ? "Loading" : user.Balance)</p>
+
+<button @onclick="generatePayLink" class="btn-cactus primary">Generate pay link</button>
+<div>
+    <input @bind="amount" type="number" placeholder="Amount"/>
+    <img src="Images/cactus_credit.svg" alt="Cactus Credits"/>
+</div>
+
+<a>@("https://cactusmessenger.azurewebsites.net/" + payLink)</a>

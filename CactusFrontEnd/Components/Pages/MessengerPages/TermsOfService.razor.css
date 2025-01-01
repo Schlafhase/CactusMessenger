@@ -1,0 +1,12 @@
+﻿h1, h2, h3 {
+    text-decoration: underline;
+}
+
+@media (max-width: 640.98px) {
+    #main {
+        position: fixed;
+        overflow: scroll;
+        height: calc(100% - 7rem);
+        padding-right: 10px;
+    }
+}

@@ -1,0 +1,91 @@
+@page "/login"
+@using CactusFrontEnd.Events
+@using Messenger
+@using MessengerInterfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+<PageTitle>Login</PageTitle>
+<h3>Login</h3>
+<p>If you don't have an account yet, you can create one <a href=@($"createAccount?redirectUrl={RedirectUrl}")>here</a>.
+</p>
+<form @onsubmit="@login">
+	<label for="userIdInput">Username: </label><br/>
+	<input @bind-value="username" class="form-control" id="userIdInput" name="userIdInput" type="text"><br/>
+	<label for="passwordInput">Password: </label><br/>
+	<input class="form-control passwordInput" type="@(showPassword ? "text" : "password")" id="passwordInput"
+	       name="passwordInput" @bind-value="password"><input class="showPassword" type="button"
+	                                                           style="background: url('Images/@(showPassword ? "eye-icon.svg" : "eye-blind-icon.svg")') no-repeat; background-size: 20px;"
+	                                                           @onclick="@(() => showPassword = !showPassword)"></input><br/>
+	<input class="btn-cactus primary" type="submit" value="Login"><span
+		class="errorSpan">@(errorString != "" ? $" - {errorString}" : "")</span>
+</form>
+
+<style>
+	form {
+		width: min(100%, 700px);
+		background-color: #13011c;
+		border-radius: 15px;
+		padding: 20px;
+		box-shadow: 0px 0px 15px magenta;
+	}
+</style>
+
+@code {
+	private string password = "";
+	private string username = "";
+	private bool showPassword;
+	private string errorString = "";
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "redirectUrl")]
+	public string? RedirectUrl { get; set; }
+
+	[Inject] private IMessengerService messengerService { get; set; }
+	[Inject] private NavigationManager navigationManager { get; set; }
+	[Inject] private EventService eventService { get; set; }
+
+	private async Task login()
+	{
+		await logout();
+		eventService.TokenHasChanged();
+		Account user;
+		errorString = "";
+
+		try
+		{
+			user = await messengerService.GetAccountByUsername(username);
+		}
+		catch (KeyNotFoundException e)
+		{
+			errorString = e.Message;
+			return;
+		}
+
+		bool loginSuccess = await messengerService.LoginAccount(user.Id, password);
+
+		if (loginSuccess)
+		{
+			AuthorizationToken token = new(user.Id, DateTime.UtcNow);
+			string tokenString = TokenVerification.GetTokenString(token);
+			await ProtectedLocalStore.SetAsync(CactusConstants.AuthTokenKey, tokenString);
+			eventService.TokenHasChanged();
+			navigationManager.NavigateTo(RedirectUrl ?? "/");
+		}
+		else
+		{
+			errorString = "Wrong password";
+		}
+	}
+
+	private async Task logout()
+	{
+		try
+		{
+			await ProtectedLocalStore.DeleteAsync(CactusConstants.AuthTokenKey);
+		}
+		catch { }
+	}
+
+}
