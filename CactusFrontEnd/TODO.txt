@@ -14,3 +14,9 @@
 // TODO: fix login streaks
 // TODO: console
 // TODO: implement password reset without being logged in
+
+
+/// github wrapped
+// TODO: most used languages
+// TODO: most productive time
+// TODO: most active day (with commit count)

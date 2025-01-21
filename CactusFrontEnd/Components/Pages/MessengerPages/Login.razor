@@ -15,9 +15,10 @@
 	<input @bind-value="username" class="form-control" id="userIdInput" name="userIdInput" type="text"><br/>
 	<label for="passwordInput">Password: </label><br/>
 	<input class="form-control passwordInput" type="@(showPassword ? "text" : "password")" id="passwordInput"
-	       name="passwordInput" @bind-value="password"><input class="showPassword" type="button"
-	                                                           style="background: url('Images/@(showPassword ? "eye-icon.svg" : "eye-blind-icon.svg")') no-repeat; background-size: 20px;"
-	                                                           @onclick="@(() => showPassword = !showPassword)"></input><br/>
+	       name="passwordInput" @bind-value="password">
+	<input class="showPassword" type="button"
+	       style="background: url('Images/@(showPassword ? "eye-icon.svg" : "eye-blind-icon.svg")') no-repeat; background-size: 20px;"
+	       @onclick="@(() => showPassword = !showPassword)"/><br/>
 	<input class="btn-cactus primary" type="submit" value="Login"><span
 		class="errorSpan">@(errorString != "" ? $" - {errorString}" : "")</span>
 </form>
