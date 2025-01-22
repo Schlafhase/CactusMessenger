@@ -55,9 +55,7 @@
 						{
 							<div
 								style="background-image: url(Images/image_load.png); width: min(100%, 350px); height: 350px;border-radius:10px; margin-bottom: 10px; padding:0">
-								<img style="width: 100%; height: 100%; padding:0; border-radius:10px"
-								     id="@($"img-{message.Id}")"
-								     src="@(imageSources.ContainsKey(message.Id) ? imageSources[message.Id] : "")"/>
+								<img style="width: 100%; height: 100%; padding:0; border-radius:10px" id="@($"img-{message.Id}")" src="@imageSources.GetValueOrDefault(message.Id, "")" alt=""/>
 							</div>
 						}
 						else
@@ -384,7 +382,7 @@
 	bool imgSelected;
 	Timer refreshTimeStampTimer;
 	readonly Regex youtubeRegex = new(@"https?://(www\.)?youtu(.be|be.com)/((watch(\?v=|/))|shorts/)?([A-Za-z0-9_]+)");
-	readonly Regex urlRegex = new(@"(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))");
+	readonly Regex urlRegex = new(@"(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:;%_\+.~#?&//=]*))");
 	bool sendDisabled;
 	private readonly Dictionary<Guid, string> imageSources = [];
 	private string messageSendError = "";
@@ -597,17 +595,12 @@
 	{
 		MatchCollection youtubeMatch = youtubeRegex.Matches(message);
 
-		if (youtubeMatch.Count == 0)
-		{
-			return null;
-		}
-
-		return $"https://youtube.com/embed/{youtubeMatch[0].Groups[6].Value}?wmode=transparent";
+		return youtubeMatch.Count == 0 ? null : $"https://youtube.com/embed/{youtubeMatch[0].Groups[6].Value}?wmode=transparent";
 	}
 
 	private string postProcessMessage(string message)
 	{
-		string newMessage = message;
+		string newMessage = HttpUtility.HtmlEncode(message);
 
 		// Replace all URLs with clickable links
 		newMessage = urlRegex.Replace(newMessage, "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"$1\">$1</a>");
