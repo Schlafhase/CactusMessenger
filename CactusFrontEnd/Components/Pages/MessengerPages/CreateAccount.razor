@@ -47,7 +47,7 @@
 		<input id="demo" type="checkbox" @bind="demo"/> <span>Create a temporary account</span>
 	</label>
 	<br/>
-	<i style="opacity: 0.5">Check this if you come from highseas. Your account (including all created messages and channels) will be deleted after 15 minutes.</i>
+	<i style="opacity: 0.5">Check this if you come from highseas. Your account (including all created messages and channels) will be deleted after @(CactusConstants.DemoAccountLifetime.Minutes) minutes.</i>
 	<br/><br/>
 	<label for="descriptionInput">Who are you?/Why do you want to create an Account?</label>
 	<br/>

@@ -129,6 +129,15 @@ public class MessengerService(
 
 		throw new KeyNotFoundException("User not found");
 	}
+	
+	private async Task<List<Account>> getExpiredDemoAccounts()
+	{
+		IQueryable<Account> q = accountRepo.GetQueryable()
+										   .Where(item => item.IsDemo && DateTime.UtcNow - item.CreationDate > CactusConstants.DemoAccountLifetime);
+		List<Account> result = await accountRepo.ToListAsync(q);
+
+		return result;
+	}
 
 	private async Task<Account> getAccount(Guid Id)
 	{
@@ -519,6 +528,12 @@ public class MessengerService(
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 		return await getAccountByUsername(username);
+	}
+	
+	public async Task<List<Account>> GetExpiredDemoAccounts()
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		return await getExpiredDemoAccounts();
 	}
 
 	public async Task<List<Account>> GetAllAccounts()

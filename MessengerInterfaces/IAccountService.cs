@@ -7,6 +7,7 @@ public interface IAccountService
 	Task<Guid> CreateAccount(string username, string password, string? email = null, bool demo = false);
 	Task<Account> GetAccount(Guid Id);
 	Task<List<Account>> GetAllAccounts();
+	Task<List<Account>> GetExpiredDemoAccounts();
 	Task<Account> GetAccountByUsername(string username);
 	Task EditAccountAdmin(Guid Id, bool giveAdmin);
 	Task EditAccountLock(Guid Id, bool newState);

@@ -487,6 +487,7 @@
 		if (!sendDisabled)
 		{
 			sendDisabled = true;
+			await InvokeAsync(StateHasChanged);
 
 			if (!string.IsNullOrWhiteSpace(messageContent) && messageContent.Length <= 5000)
 			{
@@ -505,6 +506,7 @@
 				}
 
 				messageSendError = "";
+				await InvokeAsync(StateHasChanged);
 			}
 			else
 			{
@@ -518,11 +520,13 @@
 					using MemoryStream ms = new();
 					await img.OpenReadStream(15728640L).CopyToAsync(ms);
 					using Image image = Image.FromStream(ms);
-					Optimg opt = Optimg.FromImage(image);
+					(int, int) dimensions = user.IsDemo ? CactusConstants.DemoAccountImageResolution : CactusConstants.StandardImageResolution;
+					Optimg opt = Optimg.FromImage(image, dimensions);
 					string compressedImage = opt.Compress();
 					Message msg = new(Guid.NewGuid(), $"(img){compressedImage}", DateTime.UtcNow, user.Id, channel.Id);
 					await messengerService.PostMessage(msg);
 					messageSendError = "";
+					await InvokeAsync(StateHasChanged);
 				}
 				catch
 				{
@@ -532,8 +536,8 @@
 				imgSelected = false;
 				_inputFileId = Guid.NewGuid().ToString();
 			}
-
 			sendDisabled = false;
+			await InvokeAsync(StateHasChanged);
 		}
 	}
 

@@ -1,0 +1,23 @@
+﻿@page "/debug/log"
+@rendermode InteractiveServer
+@inherits AuthorizedPage
+
+@inject IJSRuntime _jsRuntime;
+
+<PageTitle>Log</PageTitle>
+
+<div id="log">
+    @foreach ((DateTime time, string message, string color) log in _logs)
+    {
+        <span class="logEntry">
+            <span class="logTime">@($"{log.time}: ")</span><span style="color: @log.color"
+                                                                 class="logMessage">@log.message</span><br/>
+        </span>
+    }
+</div>
+
+<script>
+    window.scrollToBottom = function () {
+        document.querySelector('#log .logEntry:last-child').scrollIntoView({behavior: 'smooth'});
+    }
+</script>

@@ -91,11 +91,11 @@ public class Optimg
 		return bmp;
 	}
 
-	public static Optimg FromImage(Image img)
+	public static Optimg FromImage(Image img, (int width, int height) dimensions)
 	{
 		object bmpLocker = new();
 		Bitmap bmp_o = (Bitmap)img;
-		Bitmap bmp = new(bmp_o, new Size(300, 300));
+		Bitmap bmp = new(bmp_o, new Size(dimensions.width, dimensions.height));
 		int w = bmp.Width;
 		Optimg result = new((bmp.Width, bmp.Height));
 		Cie1976Comparison colComp = new();

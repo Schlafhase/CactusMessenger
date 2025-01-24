@@ -56,18 +56,21 @@ public class CleanUpService(IMessengerService messengerService, Logger logger)
 		return true;
 	}
 
-	public async Task RunCleanUp()
+	private async Task RunCleanUp()
 	{
 		logger.Log("Running cleanup", "CleanUp", "yellow");
-		List<Account> accounts = await messengerService.GetAllAccounts();
+		
+		await cleanUpDemoAccounts();
 
-		foreach (Account account in accounts.Where(account => account.IsDemo))
+		logger.Log("Cleanup finished", "CleanUp", "lime");
+	}
+
+	private async Task cleanUpDemoAccounts()
+	{
+		List<Account> expiredAccounts = await messengerService.GetExpiredDemoAccounts();
+
+		foreach (Account account in expiredAccounts)
 		{
-			if (DateTime.UtcNow - account.CreationDate <= CactusConstants.DemoAccountLifetime)
-			{
-				continue;
-			}
-
 			List<MessageDTO_Output> messages = await messengerService.GetMessagesByAccount(account.Id);
 
 			foreach (MessageDTO_Output message in messages)
@@ -77,21 +80,5 @@ public class CleanUpService(IMessengerService messengerService, Logger logger)
 
 			await messengerService.DeleteAccount(account.Id);
 		}
-
-		CleanUpData data;
-
-		try
-		{
-			data = await messengerService.GetCleanUpData();
-		}
-		catch (KeyNotFoundException)
-		{
-			data = new CleanUpData();
-		}
-
-		data.LastCleanUp = DateTime.UtcNow;
-		await messengerService.SaveCleanUpData(data);
-
-		logger.Log("Cleanup finished", "CleanUp", "lime");
 	}
 }

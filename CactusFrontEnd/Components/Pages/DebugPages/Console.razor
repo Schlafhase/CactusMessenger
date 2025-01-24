@@ -1,0 +1,43 @@
+﻿@page "/debug/console"
+@rendermode InteractiveServer
+@inherits AuthorizedPage
+
+<PageTitle>Console</PageTitle>
+
+<h3>Console</h3>
+
+<div id="console">
+    <span class="prefix">></span>
+    <textarea id="input" @bind="_input"></textarea>
+</div>
+
+@code {
+
+}
+
+<style>
+    #console {
+        width: 100%;
+        height: 90vh;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: black;
+        border: 1px solid grey;
+        border-radius: 2px;
+        font-family: monospace;
+        color: white;
+    }
+    
+    .prefix {
+        width: 15px;
+    }
+    
+    #input {
+        display: inline;
+        width: calc(100% - 20px);
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-family: monospace;
+    }
+</style>
