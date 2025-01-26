@@ -189,7 +189,7 @@
 
 		try
 		{
-			Guid channelId = await messengerService.CreateChannel(users.Select(usr => usr.Id).ToHashSet(), channelName);
+			Guid channelId = await messengerService.CreateChannel(users.Select(usr => usr.Id).ToHashSet(), channelName, user.Id);
 			navigationManager.NavigateTo($"channel/{channelId.ToString()}");
 		}
 		catch (Exception ex)

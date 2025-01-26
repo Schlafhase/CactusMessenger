@@ -8,6 +8,7 @@ public class ChannelDTO_Output(Channel channel, HashSet<string> userNames)
 	public HashSet<Guid> Users { get; } = channel.Users;
 	public HashSet<string> UserNames { get; } = userNames;
 	public string Name { get; } = channel.Name;
+	public Guid AuthorId { get; } = channel.AuthorId;
 	public DateTime LastMessage { get; set; } = channel.LastMessage;
 	public Dictionary<Guid, DateTime> LastRead { get; set; } = channel.LastRead;
 

@@ -57,7 +57,11 @@ public class MessengerService(
 		}
 		else
 		{
-			Channel channel = new(channelDTO.Users, channelId, channelDTO.Name);
+			Channel channel = new(channelDTO.Users, channelId, channelDTO.Name, channelDTO.AuthorId)
+			{
+				LastMessage = channelDTO.LastMessage,
+				LastRead = channelDTO.LastRead
+			};
 			await channelRepo.Replace(channelId, channel);
 		}
 
@@ -70,7 +74,7 @@ public class MessengerService(
 	{
 		IQueryable<Channel> query = channelRepo.GetQueryable();
 		List<Channel> channels = await channelRepo.ToListAsync(query);
-		return await convertChannelsToDtos(channels);
+		return await convertChannelsToDTOs(channels);
 	}
 
 	private async Task<ChannelDTO_Output> getChannel(Guid channelId)
@@ -96,7 +100,7 @@ public class MessengerService(
 		return channelDTO;
 	}
 
-	public async Task<Guid> CreateAccount(string username, string password, string? email = null, bool demo=false)
+	public async Task<Guid> CreateAccount(string username, string password, string? email = null, bool demo = false)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 
@@ -129,11 +133,13 @@ public class MessengerService(
 
 		throw new KeyNotFoundException("User not found");
 	}
-	
+
 	private async Task<List<Account>> getExpiredDemoAccounts()
 	{
+		// TODO: Query is not returning results.
 		IQueryable<Account> q = accountRepo.GetQueryable()
-										   .Where(item => item.IsDemo && DateTime.UtcNow - item.CreationDate > CactusConstants.DemoAccountLifetime);
+										   .Where(item => item.IsDemo && DateTime.UtcNow - item.CreationDate >
+													  CactusConstants.DemoAccountLifetime);
 		List<Account> result = await accountRepo.ToListAsync(q);
 
 		return result;
@@ -160,40 +166,44 @@ public class MessengerService(
 
 	//other methods
 
-	private async Task<MessageDTO_Output[]> convertMessagesToDtos(List<Message> messages)
+	private async Task<MessageDTO_Output[]> convertMessagesToDTOs(List<Message> messages)
 	{
-		return await Task.WhenAll(messages
-								  .Select(async msg =>
-								  {
-									  try
-									  {
-										  Account author = await getAccount(msg.AuthorId);
-										  ChannelDTO_Output channel = await getChannel(msg.ChannelId);
-										  return new MessageDTO_Output(
-											  msg, author.UserName, author.IsAdmin, channel.Name);
-									  }
-									  catch (Exception)
-									  {
-										  return null!;
-									  }
-								  })
-								  .Where(x => x != null)
-								  .ToArray());
+		MessageDTO_Output[] DTOs = await Task.WhenAll(messages
+														  .Select(async msg =>
+														  {
+															  try
+															  {
+																  Account author = await getAccount(msg.AuthorId);
+																  ChannelDTO_Output channel =
+																	  await getChannel(msg.ChannelId);
+																  return new MessageDTO_Output(
+																	  msg, author.UserName, author.IsAdmin,
+																	  channel.Name);
+															  }
+															  catch (Exception)
+															  {
+																  return null!;
+															  }
+														  }));
+		MessageDTO_Output[] DTOsNotNull = DTOs
+										  .Where(x => x is not null)
+										  .ToArray();
+		return DTOsNotNull;
 	}
 
-	private async Task<ChannelDTO_Output[]> convertChannelsToDtos(List<Channel> channels)
+	private async Task<ChannelDTO_Output[]> convertChannelsToDTOs(List<Channel> channels)
 	{
 		return await Task.WhenAll(channels
-								  .Select(async chnl =>
+								  .Select(async channel =>
 								  {
-									  string[] userNames = await Task.WhenAll(chnl.Users
+									  string[] userNames = await Task.WhenAll(channel.Users
 																				  .Select(async userId =>
 																				  {
 																					  Account user =
 																						  await getAccount(userId);
 																					  return user.UserName;
 																				  }));
-									  return new ChannelDTO_Output(chnl, userNames.ToHashSet());
+									  return new ChannelDTO_Output(channel, userNames.ToHashSet());
 								  })
 								  .Where(x => x != null)
 								  .ToArray());
@@ -222,10 +232,30 @@ public class MessengerService(
 	public async Task PostMessage(Message message)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
+		Account author;
+
+		try
+		{
+			author = await getAccount(message.AuthorId);
+
+			if (author.IsDemo)
+			{
+				if (author.TotalMessagesSent >= CactusConstants.DemoAccountMaxMessageCount)
+				{
+					throw new InvalidOperationException("Demo account has reached the maximum message count");
+				}
+			}
+		}
+		catch (KeyNotFoundException)
+		{
+			throw new KeyNotFoundException($"Unable to find author {message.AuthorId}");
+		}
+
 		ChannelDTO_Output channel = await getChannel(message.ChannelId);
 		await messageRepo.CreateNew(message);
 		channel.LastMessage = message.DateTime;
 		await updateLastMessageTime(channel.Id, message.DateTime);
+		await updateTotalMessagesSent(message.AuthorId, author.TotalMessagesSent + 1);
 		logger.Log($"Message posted in channel {channel.Name}");
 		OnMessage?.Invoke(channel);
 	}
@@ -253,7 +283,7 @@ public class MessengerService(
 		using IDisposable _ = await asyncLocker.Enter();
 
 		List<Message> messages = await messageRepo.GetAll();
-		return await convertMessagesToDtos(messages);
+		return await convertMessagesToDTOs(messages);
 	}
 
 	public async Task<MessageDTO_Output[]> GetAllMessagesInChannel(Guid channelId)
@@ -263,28 +293,48 @@ public class MessengerService(
 											   .Where(msg => msg.ChannelId == channelId);
 
 		List<Message> messages = await messageRepo.ToListAsync(query);
-		return await convertMessagesToDtos(messages);
+		return await convertMessagesToDTOs(messages);
 	}
-	
+
 	public async Task<List<MessageDTO_Output>> GetMessagesByAccount(Guid accountId)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 		IQueryable<Message> query = messageRepo.GetQueryable()
 											   .Where(msg => msg.AuthorId == accountId);
 		List<Message> messages = await messageRepo.ToListAsync(query);
-		return (await convertMessagesToDtos(messages)).ToList();
+		return (await convertMessagesToDTOs(messages)).ToList();
 	}
 
 	#endregion
 
 	#region Channel related methods
 
-	public async Task<Guid> CreateChannel(HashSet<Guid> userIds, string name)
+	public async Task<Guid> CreateChannel(HashSet<Guid> userIds, string name, Guid authorId)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
 
+		Account author;
+
+		try
+		{
+			author = await getAccount(authorId);
+
+			if (author.IsDemo)
+			{
+				if (author.TotalMessagesSent >= CactusConstants.DemoAccountMaxMessageCount)
+				{
+					throw new InvalidOperationException("Demo account has reached the maximum channel count");
+				}
+			}
+		}
+		catch (KeyNotFoundException)
+		{
+			throw new KeyNotFoundException($"Unable to find author {authorId}");
+		}
+		
 		Guid channelId = Guid.NewGuid();
-		await channelRepo.CreateNew(new Channel(userIds, channelId, name));
+		await channelRepo.CreateNew(new Channel(userIds, channelId, name, authorId));
+		await updateTotalChannelsCreated(authorId, author.TotalChannelsCreated + 1);
 		logger.Log($"Channel created with name {name}");
 		eventService.ChannelsHaveChanged();
 		return channelId;
@@ -363,7 +413,16 @@ public class MessengerService(
 		IQueryable<Channel> query = channelRepo.GetQueryable()
 											   .Where(channel => channel.Users.Contains(accountId));
 		List<Channel> channels = await channelRepo.ToListAsync(query);
-		return await convertChannelsToDtos(channels);
+		return await convertChannelsToDTOs(channels);
+	}
+	
+	public async Task<ChannelDTO_Output[]> GetChannelsFromAuthor(Guid authorId)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		IQueryable<Channel> query = channelRepo.GetQueryable()
+											   .Where(channel => channel.AuthorId == authorId);
+		List<Channel> channels = await channelRepo.ToListAsync(query);
+		return await convertChannelsToDTOs(channels);
 	}
 
 	public async Task<ChannelDTO_Output[]> GetAllChannels()
@@ -479,11 +538,11 @@ public class MessengerService(
 		await accountRepo.Replace(Id, target);
 		logger.Log($"Password changed for account {target.UserName}");
 	}
-	
+
 	public async Task ChangePWHash(Guid Id, string newPWHash)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
-		
+
 		Account target = await getAccount(Id);
 		target.PasswordHash = newPWHash;
 		await accountRepo.Replace(Id, target);
@@ -518,6 +577,34 @@ public class MessengerService(
 		logger.Log($"Updated login streak for account {account.UserName}. New streak: {streak}");
 	}
 
+	public async Task UpdateTotalMessagesSent(Guid Id, int amount)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		await updateTotalMessagesSent(Id, amount);
+	}
+
+	private async Task updateTotalMessagesSent(Guid Id, int amount)
+	{
+		Account account = await getAccount(Id);
+		account.TotalMessagesSent = amount;
+		await accountRepo.Replace(Id, account);
+		logger.Log($"Updated total messages sent for account {account.UserName}. New total: {amount}");
+	}
+	
+	public async Task UpdateTotalChannelsCreated(Guid Id, int amount)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		await updateTotalChannelsCreated(Id, amount);
+	}
+	
+	private async Task updateTotalChannelsCreated(Guid Id, int amount)
+	{
+		Account account = await getAccount(Id);
+		account.TotalChannelsCreated = amount;
+		await accountRepo.Replace(Id, account);
+		logger.Log($"Updated total channels created for account {account.UserName}. New total: {amount}");
+	}
+
 	public async Task<Account> GetAccount(Guid Id)
 	{
 		using IDisposable _ = await asyncLocker.Enter();
@@ -529,7 +616,7 @@ public class MessengerService(
 		using IDisposable _ = await asyncLocker.Enter();
 		return await getAccountByUsername(username);
 	}
-	
+
 	public async Task<List<Account>> GetExpiredDemoAccounts()
 	{
 		using IDisposable _ = await asyncLocker.Enter();
@@ -543,20 +630,20 @@ public class MessengerService(
 	}
 
 	#endregion
-	
+
 	#region Clean up methods
-	
+
 	public async Task<CleanUpData> GetCleanUpData()
 	{
 		CleanUpData? data = await cleanUpDataRepo.GetById(CactusConstants.CleanUpDataId);
-		
+
 		return data ?? throw new KeyNotFoundException("Clean up data not found");
 	}
-	
+
 	public async Task SaveCleanUpData(CleanUpData data)
 	{
 		await cleanUpDataRepo.Replace(CactusConstants.CleanUpDataId, data);
 	}
-	
+
 	#endregion
 }

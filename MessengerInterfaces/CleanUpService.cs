@@ -77,8 +77,17 @@ public class CleanUpService(IMessengerService messengerService, Logger logger)
 			{
 				await messengerService.DeleteMessage(message.Id);
 			}
+			
+			ChannelDTO_Output[] channels = await messengerService.GetChannelsFromAuthor(account.Id);
+			
+			foreach (ChannelDTO_Output channel in channels)
+			{
+				await messengerService.DeleteChannel(channel.Id);
+			}
 
 			await messengerService.DeleteAccount(account.Id);
 		}
 	}
+	
+	// TODO: Change all messages with non existing authors to deleted user
 }

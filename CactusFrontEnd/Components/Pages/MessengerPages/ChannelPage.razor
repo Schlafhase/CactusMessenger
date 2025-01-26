@@ -498,7 +498,23 @@
 
 				Message msg = new(Guid.NewGuid(), messageContent, DateTime.UtcNow, user.Id, channel.Id);
 				messageContent = "";
-				await messengerService.PostMessage(msg);
+
+				try
+				{
+					await messengerService.PostMessage(msg);
+				}
+				catch (InvalidOperationException)
+				{
+					messageSendError = "Max message count for demo account reached.";
+					await InvokeAsync(StateHasChanged);
+					sendDisabled = false;
+					return;
+				}
+				catch (KeyNotFoundException)
+				{
+					navigationManager.NavigateTo("logout");
+					return;
+				}
 
 				if (channel.Id == CactusConstants.GlobalChannelId)
 				{
@@ -527,6 +543,15 @@
 					await messengerService.PostMessage(msg);
 					messageSendError = "";
 					await InvokeAsync(StateHasChanged);
+				}
+				catch (KeyNotFoundException)
+				{
+					navigationManager.NavigateTo("logout");
+					return;
+				}
+				catch (InvalidOperationException)
+				{
+					messageSendError = "Max message count for demo account reached.";
 				}
 				catch
 				{

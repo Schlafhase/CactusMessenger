@@ -17,7 +17,7 @@ public static class CactusConstants
 	public static (int, int) StandardImageResolution { get; } = (300, 300);
 	
 	public static TimeSpan DemoAccountLifetime { get; } = TimeSpan.FromMinutes(15);
-	public static int DemoAccountMaxMessageCount => 25;
+	public static int DemoAccountMaxMessageCount => 15;
 	public static (int, int) DemoAccountImageResolution { get; } = (100, 100);
 	public static TimeSpan CleanUpFrequency { get; } = TimeSpan.FromMinutes(10);
 }

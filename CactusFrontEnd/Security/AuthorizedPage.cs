@@ -94,7 +94,6 @@ public abstract class AuthorizedPage : ComponentBase
 				return;
 			}
 
-			// TODO: test whether it works now
 			int daysSinceLastStreakIncrease = (DateTime.UtcNow.Date - user.LastStreakChange.Date).Days;
 
 			switch (daysSinceLastStreakIncrease)

@@ -70,7 +70,7 @@
 			<div style="height: @(selectedAccount == account.Id ? "fit-content" : "72px");" class="accountCard">
 				<div @onclick="@(() => selectedAccount = account.Id)" class="accountMeta @account.Id">
 					<strong
-						class="accountName @(account.IsAdmin ? "admin" : "") @(account.Locked ? "locked" : "")">@account.UserName</strong><br/>
+						class="accountName @(account.IsAdmin ? "admin" : "") @(account.Locked ? "locked" : "") @(account.IsDemo ? "demo" : "")">@account.UserName</strong><br/>
 					<span class="accountId">@account.Id</span>
 				</div>
 				<div class="accountMoreInfo">
@@ -176,6 +176,16 @@
 		font-weight: 500;
 		content: "Locked";
 		background-color: orange;
+		border-radius: 4px;
+		opacity: 1;
+		margin-left: 5px;
+		padding: 2px 5px;
+	}
+	
+	.demo::after {
+		font-weight: 500;
+		content: "Demo";
+		background-color: purple;
 		border-radius: 4px;
 		opacity: 1;
 		margin-left: 5px;

@@ -8,12 +8,12 @@ using Microsoft.JSInterop;
 namespace CactusFrontEnd.Components.Pages.DebugPages;
 
 [PublicAPI]
-public partial class Log : AuthorizedPage
+public sealed partial class Log : AuthorizedPage, IDisposable
 {
 	[Inject] private Logger _logger { get; set; }
 	private List<(DateTime time, string message, string color)> _logs = [];
-	private DateTime _lastRefresh = DateTime.MinValue;
-	private Thread _refreshThread;
+	private bool _disposed;
+	private Timer _timer;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -33,14 +33,9 @@ public partial class Log : AuthorizedPage
 			}
 			
 			await refreshLogs(true);
-			_lastRefresh = DateTime.UtcNow;
-		}
-		
-		
-		if (DateTime.UtcNow - _lastRefresh > TimeSpan.FromMilliseconds(20))
-		{
-			await refreshLogs();
-			_lastRefresh = DateTime.UtcNow;
+
+			TimerCallback timerCallback = new TimerCallback(async _ => await refreshLogs());
+			_timer = new Timer(timerCallback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 		}
 	}
 	
@@ -60,5 +55,11 @@ public partial class Log : AuthorizedPage
 		{
 			await _jsRuntime.InvokeVoidAsync("scrollToBottom");
 		}
+	}
+
+	public void Dispose()
+	{
+		_disposed = true;
+		_timer?.Dispose();
 	}
 }

@@ -15,6 +15,9 @@
 // TODO: console
 // TODO: implement password reset without being logged in
 
+// TODO: profiles and profile pictures
+// TODO: custom exceptions
+
 
 /// github wrapped
 // TODO: most used languages

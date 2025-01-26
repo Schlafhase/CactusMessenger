@@ -41,6 +41,8 @@ public class Account : ICosmosObject, IInMemoryObject
 	public bool IsAdmin { get; set; }
 	public bool Locked { get; set; }
 	public bool IsDemo { get; set; }
+	public int TotalMessagesSent { get; set; }
+	public int TotalChannelsCreated { get; set; }
 	public string? Email { get; set; }
 	public DateTime CreationDate { get; set; }
 	public float Balance { get; set; }

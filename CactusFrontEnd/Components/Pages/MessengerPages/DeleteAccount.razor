@@ -1,6 +1,7 @@
 ﻿@page "/deleteAccount"
 @rendermode InteractiveServer
 @inject ProtectedLocalStorage ProtectedLocalStore
+@using MessengerInterfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inherits AuthorizedPage
 
@@ -24,6 +25,23 @@ Deleting your Account can't be undone. <br/>
 
 	private async Task deleteAccountClick()
 	{
+		if (user.IsDemo)
+		{
+			List<MessageDTO_Output> messages = await messengerService.GetMessagesByAccount(user.Id);
+
+			foreach (MessageDTO_Output message in messages)
+			{
+				await messengerService.DeleteMessage(message.Id);
+			}
+			
+			ChannelDTO_Output[] channels = await messengerService.GetChannelsFromAuthor(user.Id);
+			
+			foreach (ChannelDTO_Output channel in channels)
+			{
+				await messengerService.DeleteChannel(channel.Id);
+			}
+		}
+		
 		await messengerService.DeleteAccount(user.Id);
 		navigationManager.NavigateTo("logout");
 	}

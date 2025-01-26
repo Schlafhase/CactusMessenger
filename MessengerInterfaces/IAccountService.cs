@@ -17,5 +17,7 @@ public interface IAccountService
 	Task UpdateAccountBalance(Guid Id, float amount);
 	Task UpdateAccountLastLogin(Guid Id, DateTime date);
 	Task UpdateAccountLoginStreak(Guid Id, int streak);
+	Task UpdateTotalMessagesSent(Guid Id, int amount);
+	Task UpdateTotalChannelsCreated(Guid Id, int amount);
 	Task DeleteAccount(Guid Id);
 }

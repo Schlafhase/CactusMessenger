@@ -6,7 +6,8 @@ public interface IChannelService
 {
 	Task<ChannelDTO_Output> GetChannel(Guid channelId);
 	Task<ChannelDTO_Output[]> GetAllChannels();
-	Task<Guid> CreateChannel(HashSet<Guid> userIds, string name);
+	Task<Guid> CreateChannel(HashSet<Guid> userIds, string name, Guid authorId);
+	Task<ChannelDTO_Output[]> GetChannelsFromAuthor(Guid authorId);
 	Task AddUserToChannel(Guid Id, Guid channelId);
 	Task<ChannelDTO_Output[]> GetChannelsWithUser(Guid accountId);
 	Task DeleteChannel(Guid Id);

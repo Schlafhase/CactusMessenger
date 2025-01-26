@@ -10,7 +10,7 @@
     @foreach ((DateTime time, string message, string color) log in _logs)
     {
         <span class="logEntry">
-            <span class="logTime">@($"{log.time}: ")</span><span style="color: @log.color"
+            <span class="logTime">@($"{log.time} ")</span><span style="color: @log.color"
                                                                  class="logMessage">@log.message</span><br/>
         </span>
     }

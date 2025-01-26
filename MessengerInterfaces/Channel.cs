@@ -5,13 +5,14 @@ namespace Messenger;
 
 public class Channel : ICosmosObject, IInMemoryObject
 {
-	public Channel(HashSet<Guid> users, Guid id, string name)
+	public Channel(HashSet<Guid> users, Guid id, string name, Guid authorId)
 	{
 		Users = users;
 		Id = id;
 		Name = name;
 		LastMessage = DateTime.UtcNow;
 		LastRead = [];
+		AuthorId = authorId;
 	}
 
 	[JsonConstructor]
@@ -23,6 +24,7 @@ public class Channel : ICosmosObject, IInMemoryObject
 
 	public HashSet<Guid> Users { get; private set; }
 	public string Name { get; private set; }
+	public Guid AuthorId { get; private set; }
 	public DateTime LastMessage { get; set; }
 	public Dictionary<Guid, DateTime> LastRead { get; set; }
 

@@ -133,11 +133,11 @@ public class MessengerController : ControllerBase
 	}
 
 	[HttpPost("createChannel")]
-	public async Task<ActionResult<Guid>> CreateChannel([FromBody] [Required] HashSet<Guid> userIds)
+	public async Task<ActionResult<Guid>> CreateChannel([FromBody] [Required] HashSet<Guid> userIds, Guid authorId)
 	{
 		try
 		{
-			return await messengerService.CreateChannel(userIds, "");
+			return await messengerService.CreateChannel(userIds, "", authorId);
 		}
 		catch (Exception ex)
 		{
