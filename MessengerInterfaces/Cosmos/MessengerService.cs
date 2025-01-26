@@ -137,9 +137,9 @@ public class MessengerService(
 	private async Task<List<Account>> getExpiredDemoAccounts()
 	{
 		// TODO: Query is not returning results.
+		DateTime expiredCreationDate = DateTime.UtcNow - CactusConstants.DemoAccountLifetime;
 		IQueryable<Account> q = accountRepo.GetQueryable()
-										   .Where(item => item.IsDemo && DateTime.UtcNow - item.CreationDate >
-													  CactusConstants.DemoAccountLifetime);
+										   .Where(item => item.IsDemo && item.CreationDate < expiredCreationDate);
 		List<Account> result = await accountRepo.ToListAsync(q);
 
 		return result;

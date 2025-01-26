@@ -461,7 +461,14 @@
 
 	private Task loadImage(InputFileChangeEventArgs e)
 	{
-		img = e.File;
+		try
+		{
+			img = e.File;
+		}
+		catch (InvalidOperationException)
+		{
+			return Task.CompletedTask;
+		}
 		imgSelected = true;
 		return Task.CompletedTask;
 	}
