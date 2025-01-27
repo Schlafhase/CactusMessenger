@@ -13,7 +13,6 @@ public sealed partial class Log : AuthorizedPage, IDisposable
 	[Inject] private Logger _logger { get; set; }
 	private List<(DateTime time, string message, string color)> _logs = [];
 	private bool _disposed;
-	private Timer _timer;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -33,9 +32,10 @@ public sealed partial class Log : AuthorizedPage, IDisposable
 			}
 			
 			await refreshLogs(true);
+			_logger.OnLogAsync += async () => await refreshLogs();
 
-			TimerCallback timerCallback = new TimerCallback(async _ => await refreshLogs());
-			_timer = new Timer(timerCallback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+			// TimerCallback timerCallback = new TimerCallback(async _ => await refreshLogs());
+			// _timer = new Timer(timerCallback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
 		}
 	}
 	
@@ -60,6 +60,5 @@ public sealed partial class Log : AuthorizedPage, IDisposable
 	public void Dispose()
 	{
 		_disposed = true;
-		_timer?.Dispose();
 	}
 }
