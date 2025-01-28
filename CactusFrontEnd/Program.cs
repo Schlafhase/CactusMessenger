@@ -39,6 +39,12 @@ await discordService.Run();
 TokenVerification.Initialize();
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
+bool isDevelopment = builder.Environment.IsDevelopment();
+
+builder.Services.AddSingleton<StateProvider>(_ => new StateProvider()
+{
+	IsDevelopment = isDevelopment
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

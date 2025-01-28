@@ -1,6 +1,8 @@
 @page "/"
 @rendermode InteractiveServer
 @inject ProtectedLocalStorage ProtectedLocalStore
+@inject StateProvider _stateProvider
+@using MessengerInterfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inherits AuthorizedPage
 
@@ -14,6 +16,10 @@
 	</Content>
 </Alert>
 <h1>Cactus Messenger</h1>
+
+@if (_stateProvider.IsDevelopment) {
+	<b>Development</b><br/>
+}
 
 Go to a channel to start messaging.
 <div id="links">
