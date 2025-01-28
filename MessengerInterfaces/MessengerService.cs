@@ -1,10 +1,7 @@
-﻿using CactusFrontEnd.Events;
-using CactusFrontEnd.Exceptions;
-using CactusFrontEnd.Utils;
-using Messenger;
-using MessengerInterfaces;
+﻿using MessengerInterfaces.Exceptions;
+using MessengerInterfaces.Utils;
 
-namespace CactusFrontEnd.Cosmos;
+namespace MessengerInterfaces;
 
 public class MessengerService(
 	IRepository<Account> accountRepo,

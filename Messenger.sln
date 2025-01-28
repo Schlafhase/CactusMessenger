@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacToe", "TicTacToe\TicTacToe.csproj", "{C0517F9B-E2D0-4EF9-BC6A-2DCF2167AFBE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailService", "EmailService\EmailService.csproj", "{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Email", "Email\Email.csproj", "{A7C291B8-8BB0-4C9A-A809-A9FD56F7461C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CactusPay", "CactusPay\CactusPay.csproj", "{62B63CD9-310B-402C-A1D5-27C611774525}"
 EndProject

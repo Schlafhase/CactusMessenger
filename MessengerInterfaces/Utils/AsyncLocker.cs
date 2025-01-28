@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Utils;
+﻿namespace MessengerInterfaces.Utils;
 
 public class AsyncLocker
 {

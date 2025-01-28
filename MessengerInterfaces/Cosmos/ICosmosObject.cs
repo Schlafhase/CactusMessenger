@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Messenger;
+namespace MessengerInterfaces;
 
 public interface ICosmosObject
 {

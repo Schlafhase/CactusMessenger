@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MessengerInterfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Messenger.Controllers;
+namespace CactusFrontEnd.Controllers;
 
 //[ApiController]
 //[Route("[controller]")]

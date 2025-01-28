@@ -1,12 +1,10 @@
 ﻿using System.Linq.Expressions;
 using System.Net;
-using CactusFrontEnd.Exceptions;
-using CactusFrontEnd.Utils;
-using Messenger;
-using MessengerInterfaces;
+using MessengerInterfaces.Exceptions;
+using MessengerInterfaces.Utils;
 using Microsoft.Azure.Cosmos;
 
-namespace CactusFrontEnd.Cosmos;
+namespace MessengerInterfaces;
 
 public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) : IRepository<T>
 	where T : class, ICosmosObject
@@ -39,7 +37,7 @@ public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) 
 		return await ToListAsync(q);
 	}
 
-	public async Task<T?> GetById(Guid id)
+	public async Task<T> GetById(Guid id)
 	{
 		try
 		{
@@ -48,16 +46,11 @@ public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) 
 			List<T> result = await ToListAsync(q);
 
 			//ItemResponse<T> result = await container.ReadItemAsync<T>(id.ToString(), new PartitionKey(id.ToString()));
-			if (result.Count != 1)
-			{
-				return null;
-			}
-
-			return result.First();
+			return result.Count == 1 ? result.First() : throw new FileNotFoundException();
 		}
 		catch (CosmosException e) when (e.StatusCode is HttpStatusCode.NotFound)
 		{
-			return null;
+			throw new FileNotFoundException();
 		}
 	}
 
@@ -75,7 +68,7 @@ public abstract class CosmosRepositoryBase<T>(CosmosClient client, string type) 
 		List<Guid> ids = await ToListAsync(query);
 
 		await Task.WhenAll(ids
-							   .Select(id => DeleteItem(id)));
+							   .Select(DeleteItem));
 	}
 
 	public async Task DeleteItem(Guid id)

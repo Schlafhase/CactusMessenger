@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography;
 using CactusFrontEnd.Components;
-using CactusFrontEnd.Events;
-using Messenger;
 using MessengerInterfaces;
+using MessengerInterfaces.Security;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 

@@ -1,7 +1,6 @@
-﻿using Messenger;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 
-namespace CactusFrontEnd.Cosmos;
+namespace MessengerInterfaces;
 
 public class CosmosMessageRepository(CosmosClient client)
 	: CosmosRepositoryBase<Message>(client, "message");

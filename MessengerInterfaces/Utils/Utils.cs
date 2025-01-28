@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
-namespace CactusFrontEnd.Utils;
+namespace MessengerInterfaces.Utils;
 
 public static class Utils
 {

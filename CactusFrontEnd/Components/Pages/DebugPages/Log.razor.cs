@@ -1,5 +1,4 @@
-﻿using System.Net;
-using CactusFrontEnd.Security;
+﻿using CactusFrontEnd.Security;
 using JetBrains.Annotations;
 using MessengerInterfaces;
 using Microsoft.AspNetCore.Components;

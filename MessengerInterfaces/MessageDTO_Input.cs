@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Messenger;
+namespace MessengerInterfaces;
 
 /// <summary>
 ///     Encapsulates a message.

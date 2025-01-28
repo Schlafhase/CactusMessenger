@@ -1,12 +1,15 @@
 ﻿using CactusFrontEnd.Security;
+using Email;
 using Microsoft.AspNetCore.Components;
 
 namespace CactusFrontEnd.Components.Pages.MessengerPages;
 
+// TODO: Implement resetPasswordEmailRedirect page
+
 public partial class ResetPassword : AuthorizedPage
 {
 	[Inject]
-	EmailService.EmailService emailService { get; set; }
+	IEmailService emailService { get; set; }
 	private string _newPassword = "";
 	private string _errorString = "";
 	private bool _disabled = false;
@@ -44,7 +47,7 @@ public partial class ResetPassword : AuthorizedPage
 		}
 		
 		_disabled = true;
-		emailService.Send(user.Email!, "Reset Password", EmailService.EmailService.GeneratePasswordResetEmail(_newPassword, user.Id));
+		emailService.Send(user.Email!, "Reset Password", EmailService.GeneratePasswordResetEmail(_newPassword, user.Id));
 		_finished = true;
 		await InvokeAsync(StateHasChanged);
 	}

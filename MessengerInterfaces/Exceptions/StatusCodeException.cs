@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace CactusFrontEnd.Exceptions;
+namespace MessengerInterfaces.Exceptions;
 
 public class StatusCodeException : Exception
 {

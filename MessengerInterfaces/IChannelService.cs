@@ -1,6 +1,4 @@
-﻿using MessengerInterfaces;
-
-namespace Messenger;
+﻿namespace MessengerInterfaces;
 
 public interface IChannelService
 {

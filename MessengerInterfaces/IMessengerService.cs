@@ -1,4 +1,4 @@
-﻿using Messenger;
+﻿using MessengerInterfaces;
 
 namespace MessengerInterfaces;
 

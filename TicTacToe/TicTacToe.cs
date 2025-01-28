@@ -1,4 +1,6 @@
-﻿public class TicTacToe
+﻿namespace TicTacToe;
+
+public class TicTacToe
 {
 	//1 is X
 	//2 is O

@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
-namespace CactusFrontEnd.Cosmos.utils;
+namespace MessengerInterfaces.Utils;
 
 /// <summary>
 ///     A <see cref="CosmosSerializer" /> that internally uses Newtonsoft JSON.NET. Adapted from

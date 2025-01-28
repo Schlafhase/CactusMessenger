@@ -1,8 +1,8 @@
 ﻿@page "/reviewAccount"
-@inject EmailService emailService
+@inject IEmailService emailService
 @rendermode InteractiveServer
-@using EmailService
-@using Messenger
+@using Email
+@using MessengerInterfaces
 @inherits AuthorizedPage
 
 <PageTitle>Review Account</PageTitle>

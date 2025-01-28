@@ -1,4 +1,4 @@
-﻿namespace Messenger;
+﻿namespace MessengerInterfaces;
 
 public interface IAccountService
 {

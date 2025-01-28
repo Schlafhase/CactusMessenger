@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Security;
+﻿namespace MessengerInterfaces.Security;
 
 public class EmailVerifyToken(string email, Guid userId, DateTime issuingDate) : IToken
 {

@@ -2,10 +2,9 @@
 @rendermode InteractiveServer
 @inject ProtectedLocalStorage ProtectedLocalStore
 @using System.Text.RegularExpressions
-@using CactusFrontEnd.Events
-@using EmailService
-@using Messenger
+@using Email
 @using MessengerInterfaces
+@using MessengerInterfaces.Security
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inherits AuthorizedPage
 
@@ -100,7 +99,7 @@
 	[Inject] private IMessengerService messengerService { get; set; }
 	[Inject] private NavigationManager navigationManager { get; set; }
 	[Inject] private EventService eventService { get; set; }
-	[Inject] private EmailService emailService { get; set; }
+	[Inject] private IEmailService emailService { get; set; }
 
 	private async Task emailLearnMore()
 	{

@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Security;
+﻿namespace MessengerInterfaces.Security;
 
 public class SignedToken<T> : ISignedToken where T : IToken
 {

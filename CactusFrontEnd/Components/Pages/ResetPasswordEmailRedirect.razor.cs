@@ -1,5 +1,6 @@
 ﻿using CactusFrontEnd.Security;
 using MessengerInterfaces;
+using MessengerInterfaces.Security;
 using Microsoft.AspNetCore.Components;
 
 namespace CactusFrontEnd.Components.Pages;

@@ -1,3 +1,3 @@
-﻿namespace CactusFrontEnd.Security;
+﻿namespace MessengerInterfaces.Security;
 
 public interface IToken { }

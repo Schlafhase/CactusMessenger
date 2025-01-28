@@ -51,7 +51,7 @@
       <ProjectReference Include="..\OptimisedImages\OptimisedImages.csproj" />
       <ProjectReference Include="..\CactusPay\CactusPay.csproj" />
       <ProjectReference Include="..\Discord\Discord.csproj" />
-      <ProjectReference Include="..\EmailService\EmailService.csproj" />
+      <ProjectReference Include="..\Email\Email.csproj" />
       <ProjectReference Include="..\MessengerInterfaces\MessengerInterfaces.csproj" />
       <ProjectReference Include="..\TicTacToe\TicTacToe.csproj" />
     </ItemGroup>

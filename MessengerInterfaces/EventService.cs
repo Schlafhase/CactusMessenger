@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Events;
+﻿namespace MessengerInterfaces;
 
 public class EventService
 {

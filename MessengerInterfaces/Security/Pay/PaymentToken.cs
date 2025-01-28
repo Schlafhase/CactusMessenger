@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Security.Pay;
+﻿namespace MessengerInterfaces.Security.Pay;
 
 public class PaymentToken(
 	Guid merchantId,

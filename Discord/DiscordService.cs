@@ -5,7 +5,7 @@ using NetCord.Rest;
 
 namespace Discord;
 
-public class DiscordService(string token)
+public class DiscordService(string token) : IDiscordService
 {
 	private readonly GatewayClient _client = new(new BotToken(token));
 

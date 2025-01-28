@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using CactusFrontEnd.Security;
-using CactusFrontEnd.Security.Pay;
-using Messenger;
 using MessengerInterfaces;
+using MessengerInterfaces.Security;
+using MessengerInterfaces.Security.Pay;
 using Newtonsoft.Json;
 using Transaction = MessengerInterfaces.Pay.Transaction;
 

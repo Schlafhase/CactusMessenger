@@ -1,4 +1,4 @@
-﻿using CactusFrontEnd.Cosmos;
+﻿using MessengerInterfaces;
 using Microsoft.Azure.Cosmos;
 
 namespace CactusPay;

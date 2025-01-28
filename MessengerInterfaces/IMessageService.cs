@@ -1,6 +1,4 @@
-﻿using MessengerInterfaces;
-
-namespace Messenger;
+﻿namespace MessengerInterfaces;
 
 /// <summary>
 ///     Repository for messages.

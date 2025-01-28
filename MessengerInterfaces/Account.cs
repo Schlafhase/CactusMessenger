@@ -1,10 +1,11 @@
-﻿using MessengerInterfaces;
+﻿using Acornbrot.LocalDB.Interfaces;
+using MessengerInterfaces;
 using MessengerInterfaces.Pay;
 using Newtonsoft.Json;
 
-namespace Messenger;
+namespace MessengerInterfaces;
 
-public class Account : ICosmosObject, IInMemoryObject
+public class Account : ICosmosObject, IDbObject
 {
 	[System.Text.Json.Serialization.JsonConstructor]
 #pragma warning disable CS8618, CS9264
@@ -28,7 +29,7 @@ public class Account : ICosmosObject, IInMemoryObject
 		Email = email;
 	}
 
-	[Newtonsoft.Json.JsonConstructor]
+	[JsonConstructor]
 	public Account(List<Transaction>? Transactions, DateTime? LastLogin, DateTime? LastStreakChange)
 	{
 		this.Transactions = Transactions ?? [];

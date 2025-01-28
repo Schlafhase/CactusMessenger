@@ -1,3 +1,3 @@
-﻿namespace CactusFrontEnd.Exceptions;
+﻿namespace MessengerInterfaces.Exceptions;
 
 public class UsernameExistsException : Exception { }

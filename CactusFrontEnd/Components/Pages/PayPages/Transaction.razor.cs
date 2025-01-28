@@ -1,6 +1,7 @@
 ﻿using CactusFrontEnd.Security;
-using CactusFrontEnd.Security.Pay;
 using CactusPay;
+using MessengerInterfaces.Security;
+using MessengerInterfaces.Security.Pay;
 using Microsoft.AspNetCore.Components;
 
 namespace CactusFrontEnd.Components.Pages.PayPages;

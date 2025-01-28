@@ -1,4 +1,4 @@
-﻿using CactusFrontEnd.Security.Pay;
+﻿using MessengerInterfaces.Security.Pay;
 
 namespace MessengerInterfaces.Pay;
 

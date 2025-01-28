@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using System.Text;
-using CactusFrontEnd.Security;
-using CactusFrontEnd.Utils;
+using MessengerInterfaces.Security;
+using MessengerInterfaces.Utils;
 
-namespace EmailService;
+namespace Email;
 
-public class EmailService
+public class EmailService : IEmailService
 {
 	private readonly SmtpClient smtpClient;
 

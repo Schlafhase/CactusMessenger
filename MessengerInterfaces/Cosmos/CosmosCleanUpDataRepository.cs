@@ -1,7 +1,6 @@
-﻿using MessengerInterfaces;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 
-namespace CactusFrontEnd.Cosmos;
+namespace MessengerInterfaces;
 
 public class CosmosCleanUpDataRepository(CosmosClient client)
 	: CosmosRepositoryBase<CleanUpData>(client, "cleanUpData");

@@ -3,17 +3,16 @@
 @implements IDisposable
 @inject ProtectedLocalStorage ProtectedLocalStore
 @inject IJSRuntime jsRuntime
-@inject DiscordService discordService
+@inject IDiscordService discordService
 @using System.Text.RegularExpressions
 @using System.Web
-@using CactusFrontEnd.Utils
 @using Discord
-@using Messenger
 @using MessengerInterfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using OptimisedImages
 @using System.Drawing
 @using System.Drawing.Imaging
+@using MessengerInterfaces.Utils
 @inherits AuthorizedPage
 
 <PageTitle>@((channel is not null ? channel.Name : "Channel") + " - Cactus Messenger")</PageTitle>

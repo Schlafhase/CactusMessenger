@@ -1,5 +1,4 @@
-﻿using Messenger;
-using MessengerInterfaces;
+﻿using MessengerInterfaces;
 using Newtonsoft.Json;
 
 namespace CactusPay;

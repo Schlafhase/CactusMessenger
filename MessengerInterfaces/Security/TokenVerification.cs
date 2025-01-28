@@ -2,7 +2,7 @@
 using System.Text;
 using Newtonsoft.Json;
 
-namespace CactusFrontEnd.Security;
+namespace MessengerInterfaces.Security;
 
 public static class TokenVerification
 {

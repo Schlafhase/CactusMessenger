@@ -1,4 +1,6 @@
-﻿internal class Program
+﻿namespace OptimisedImages;
+
+internal class Program
 {
 	private static void Main(string[] args)
 	{

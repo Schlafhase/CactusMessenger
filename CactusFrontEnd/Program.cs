@@ -1,24 +1,22 @@
 using CactusFrontEnd.Components;
-using CactusFrontEnd.Cosmos;
-using CactusFrontEnd.Cosmos.utils;
-using CactusFrontEnd.Events;
 using CactusFrontEnd.Security;
-using CactusFrontEnd.Utils;
 using CactusPay;
 using Discord;
+using Email;
 using JsonNet.ContractResolvers;
 using Majorsoft.Blazor.Components.Common.JsInterop;
 using Majorsoft.Blazor.Components.CssEvents;
 using Majorsoft.Blazor.Components.Notifications;
-using Messenger;
 using MessengerInterfaces;
+using MessengerInterfaces.Security;
+using MessengerInterfaces.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
 string emailPassword;
 string dbPassword;
-string bottoken;
+string botToken;
 
 using (StreamReader sr = new("./email.password"))
 {
@@ -32,10 +30,10 @@ using (StreamReader sr = new("./db.password"))
 
 using (StreamReader sr = new("./bottoken.password"))
 {
-	bottoken = sr.ReadLine()!;
+	botToken = sr.ReadLine()!;
 }
 
-DiscordService discordService = new(bottoken);
+DiscordService discordService = new(botToken);
 await discordService.Run();
 
 TokenVerification.Initialize();
@@ -58,7 +56,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddSingleton<DiscordService>(_ => discordService);
+
+builder.Services.AddSingleton<IDiscordService>(_ => discordService);
 builder.Services.AddSingleton<EventService>();
 builder.Services.AddSingleton<Logger>();
 builder.Services.AddSingleton<IRepository<Account>, CosmosAccountRepository>();
@@ -83,7 +82,9 @@ builder.Services.AddSingleton<CosmosClient>(_ => new CosmosClient(
 															ContractResolver = new PrivateSetterContractResolver()
 														})
 												}));
-builder.Services.AddSingleton<EmailService.EmailService>(_ => new EmailService.EmailService(emailPassword));
+builder.Services.AddSingleton<IEmailService>(_ => new EmailService(emailPassword));
+
+// TODO: Remove when rewriting UI
 builder.Services.AddBlazorContextMenu(options =>
 {
 	options.ConfigureTemplate("cactusTemplate", template =>

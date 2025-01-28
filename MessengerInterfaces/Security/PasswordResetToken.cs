@@ -1,4 +1,4 @@
-﻿namespace CactusFrontEnd.Security;
+﻿namespace MessengerInterfaces.Security;
 
 public class PasswordResetToken(string newPasswordHash, Guid userId, DateTime issuingDate) : IToken
 {

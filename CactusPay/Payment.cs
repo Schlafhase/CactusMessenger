@@ -1,6 +1,6 @@
-﻿using CactusFrontEnd.Security;
-using CactusFrontEnd.Security.Pay;
-using MessengerInterfaces.Pay;
+﻿using MessengerInterfaces.Pay;
+using MessengerInterfaces.Security;
+using MessengerInterfaces.Security.Pay;
 
 namespace CactusPay;
 

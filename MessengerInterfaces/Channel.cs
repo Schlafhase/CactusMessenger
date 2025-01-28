@@ -1,9 +1,10 @@
-﻿using MessengerInterfaces;
+﻿using Acornbrot.LocalDB.Interfaces;
+using MessengerInterfaces;
 using Newtonsoft.Json;
 
-namespace Messenger;
+namespace MessengerInterfaces;
 
-public class Channel : ICosmosObject, IInMemoryObject
+public class Channel : ICosmosObject, IDbObject
 {
 	public Channel(HashSet<Guid> users, Guid id, string name, Guid authorId)
 	{

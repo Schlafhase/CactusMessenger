@@ -10,7 +10,7 @@ public interface IRepository<T>
 	/// <summary>
 	///     Gets the object with the given <paramref name="id" />. Returns null if not found.
 	/// </summary>
-	Task<T?> GetById(Guid id);
+	Task<T> GetById(Guid id);
 
 	Task<List<T>> GetAll();
 

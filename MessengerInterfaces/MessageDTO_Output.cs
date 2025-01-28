@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using Messenger;
+using MessengerInterfaces;
 
 namespace MessengerInterfaces;
 
