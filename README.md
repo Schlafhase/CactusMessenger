@@ -1,10 +1,39 @@
 # What is Cactus Messenger?
-Cactus Messenger is a free and open-source messenger. I started working on it in April 2024 and I am developing it to gain experience. It has also become a kind of insider in my friend group.
+Cactus Messenger is a free and open-source messenger written in ASP.NET Blazor. I started working on it in April 2024 and I am developing it to gain experience. It has also become a kind of insider in my friend group.
 
 # How to use it?
 ## Using my instance
 You can [apply for an account](https://cactusmessenger.azurewebsites.net/createAccount) but I usually only allow people I know to create accounts to prevent spam. 
 ## Hosting your own instance
+### Local
+You can host the Messenger using my local database (it's very bad and inefficient but I'll replace it with SQL or MongoDB in the future). You can do this by either making sure you are in a development environment or by replacing the lines 71-96 of `CactusFrontEnd/Program.cs`
+```cs
+if (isDevelopment)
+{
+	...
+}
+else
+{
+	...
+}
+```
+with
+```cs
+if (!Path.Exists(CactusConstants.LocalDbRoot))
+{
+  Directory.CreateDirectory(CactusConstants.LocalDbRoot);
+}
+
+builder.Services.AddSingleton<IRepository<Account>>(_ => new LocalAccountRepository(CactusConstants.LocalDbRoot));
+builder.Services.AddSingleton<IRepository<Channel>>(_ => new LocalChannelRepository(CactusConstants.LocalDbRoot));
+builder.Services.AddSingleton<IRepository<Message>>(_ => new LocalMessageRepository(CactusConstants.LocalDbRoot));
+builder.Services.AddSingleton<IRepository<CleanUpData>>(
+  _ => new LocalCleanUpDataRepository(CactusConstants.LocalDbRoot));
+builder.Services.AddSingleton<IRepository<PaymentManager>>(_ => new LocalPaymentRepo(CactusConstants.LocalDbRoot));
+builder.Services.AddSingleton<IDiscordService, LocalDiscordService>();
+builder.Services.AddSingleton<IEmailService, LocalEmailService>();
+```
+### CosmosDB
 You can also try to host an own instance of the messenger by cloning the repo and setting up your own CosmosDB for it. You will need to add the following files to the project:
 * `email.password` - This file contains an app password for your email. (You can also try to remove the email service from the project)
 * `db.password` - Your CosmosDB key
