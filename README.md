@@ -7,7 +7,7 @@ You can [apply for an account](https://cactusmessenger.azurewebsites.net/createA
 ## Hosting your own instance
 First you will need to download my [LocalDB](https://github.com/Schlafhase/Acornbrot.LocalDB) and place the folder in the parent directory of this repo. So for example let's say you have put this repo into a folder called `Cactus`
 ```
-Cactus/CactusFrontEnd
+Cactus/CactusMessenger
 ```
 then you will need to put the `Acornbrot.LocalDB` folder into the same parent directory
 ```
