@@ -1,10 +1,11 @@
 ﻿using Acornbrot.LocalDB.Interfaces;
 using MessengerInterfaces;
+using MessengerInterfaces.Local;
 using Newtonsoft.Json;
 
 namespace MessengerInterfaces;
 
-public class CleanUpData : ICosmosObject, IDbObject
+public class CleanUpData : ICosmosObject, ILocalObject
 {
 	[JsonProperty("id")] public Guid Id => CactusConstants.CleanUpDataId;
 	public string Type  => "cleanUpData";

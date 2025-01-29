@@ -1,11 +1,12 @@
 ﻿using Acornbrot.LocalDB.Interfaces;
 using MessengerInterfaces;
+using MessengerInterfaces.Local;
 using MessengerInterfaces.Pay;
 using Newtonsoft.Json;
 
 namespace MessengerInterfaces;
 
-public class Account : ICosmosObject, IDbObject
+public class Account : ICosmosObject, ILocalObject
 {
 	[System.Text.Json.Serialization.JsonConstructor]
 #pragma warning disable CS8618, CS9264
@@ -37,7 +38,7 @@ public class Account : ICosmosObject, IDbObject
 		this.LastStreakChange = LastStreakChange ?? DateTime.MinValue;
 	}
 
-	public string UserName { get; private set; }
+	public string UserName { get; set; }
 	public string PasswordHash { get; set; }
 	public bool IsAdmin { get; set; }
 	public bool Locked { get; set; }

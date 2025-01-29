@@ -6,7 +6,7 @@ using MessengerInterfaces.Utils;
 
 namespace MessengerInterfaces.Local;
 
-public class LocalRepositoryBase<T>(string root, string type) : IRepository<T> where T : IDbObject
+public class LocalRepositoryBase<T>(string root, string type) : IRepository<T> where T : ILocalObject
 {
 	private readonly LocalDbClient _client = new(root);
 	private readonly AsyncLocker _asyncLocker = new();
@@ -35,8 +35,11 @@ public class LocalRepositoryBase<T>(string root, string type) : IRepository<T> w
 
 	public IQueryable<T> GetQueryable()
 	{
+		IQueryable<Guid> tCollection = _client.GetItemLinqQueryable<LocalObject>()
+											  .Where(item => item.Type == type)
+											  .Select(item => item.Id);
 		return _client.GetItemLinqQueryable<T>()
-					  .Where(item => item.Type == type);
+					  .Where(item => tCollection.Contains(item.Id));
 	}
 
 	public async Task<List<TElement>> ToListAsync<TElement>(IQueryable<TElement> query)

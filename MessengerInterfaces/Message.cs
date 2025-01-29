@@ -1,5 +1,6 @@
 ﻿using Acornbrot.LocalDB.Interfaces;
 using MessengerInterfaces;
+using MessengerInterfaces.Local;
 using Newtonsoft.Json;
 
 namespace MessengerInterfaces;
@@ -7,7 +8,7 @@ namespace MessengerInterfaces;
 /// <summary>
 ///     Encapsulates a message.
 /// </summary>
-public class Message : ICosmosObject, IDbObject
+public class Message : ICosmosObject, ILocalObject
 {
 	[System.Text.Json.Serialization.JsonConstructor]
 	public Message(Guid id, string content, DateTime dateTime, Guid authorId, Guid channelId)

@@ -12,9 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Acornbrot.LocalDB">
-        <HintPath>..\..\Acornbrot.LocalDB\Acornbrot.LocalDB\bin\Release\net8.0\Acornbrot.LocalDB.dll</HintPath>
-      </Reference>
+      <ProjectReference Include="..\..\Acornbrot.LocalDB\Acornbrot.LocalDB\Acornbrot.LocalDB.csproj" />
     </ItemGroup>
 
 </Project>

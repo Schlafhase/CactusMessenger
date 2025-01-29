@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CactusFrontEnd", "CactusFro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptimisedImages", "OptimisedImages\OptimisedImages.csproj", "{7E3B386E-7688-4D4F-847D-975F2D92081B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acornbrot.LocalDB", "..\Acornbrot.LocalDB\Acornbrot.LocalDB\Acornbrot.LocalDB.csproj", "{89C426D1-014E-4416-96AD-73044E01897B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E3B386E-7688-4D4F-847D-975F2D92081B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89C426D1-014E-4416-96AD-73044E01897B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89C426D1-014E-4416-96AD-73044E01897B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89C426D1-014E-4416-96AD-73044E01897B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89C426D1-014E-4416-96AD-73044E01897B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

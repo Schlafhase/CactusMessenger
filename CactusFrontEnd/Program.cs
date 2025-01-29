@@ -8,6 +8,7 @@ using Majorsoft.Blazor.Components.Common.JsInterop;
 using Majorsoft.Blazor.Components.CssEvents;
 using Majorsoft.Blazor.Components.Notifications;
 using MessengerInterfaces;
+using MessengerInterfaces.Local;
 using MessengerInterfaces.Security;
 using MessengerInterfaces.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -63,16 +64,38 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddAuthorizationCore();
 
-builder.Services.AddSingleton<IDiscordService>(_ => discordService);
 builder.Services.AddSingleton<EventService>();
 builder.Services.AddSingleton<Logger>();
-builder.Services.AddSingleton<IRepository<Account>, CosmosAccountRepository>();
-builder.Services.AddSingleton<IRepository<Channel>, CosmosChannelRepository>();
-builder.Services.AddSingleton<IRepository<Message>, CosmosMessageRepository>();
-builder.Services.AddSingleton<IRepository<CleanUpData>, CosmosCleanUpDataRepository>();
 builder.Services.AddSingleton<AsyncLocker>(_ => new AsyncLocker());
+
+if (isDevelopment)
+{
+	if (!Path.Exists(CactusConstants.LocalDbRoot))
+	{
+		Directory.CreateDirectory(CactusConstants.LocalDbRoot);
+	}
+	
+	builder.Services.AddSingleton<IRepository<Account>>(_ => new LocalAccountRepository(CactusConstants.LocalDbRoot));
+	builder.Services.AddSingleton<IRepository<Channel>>(_ => new LocalChannelRepository(CactusConstants.LocalDbRoot));
+	builder.Services.AddSingleton<IRepository<Message>>(_ => new LocalMessageRepository(CactusConstants.LocalDbRoot));
+	builder.Services.AddSingleton<IRepository<CleanUpData>>(
+		_ => new LocalCleanUpDataRepository(CactusConstants.LocalDbRoot));
+	builder.Services.AddSingleton<IRepository<PaymentManager>>(_ => new LocalPaymentRepo(CactusConstants.LocalDbRoot));
+	builder.Services.AddSingleton<IDiscordService, LocalDiscordService>();
+	builder.Services.AddSingleton<IEmailService, LocalEmailService>();
+}
+else
+{
+	builder.Services.AddSingleton<IRepository<Account>, CosmosAccountRepository>();
+	builder.Services.AddSingleton<IRepository<Channel>, CosmosChannelRepository>();
+	builder.Services.AddSingleton<IRepository<Message>, CosmosMessageRepository>();
+	builder.Services.AddSingleton<IRepository<CleanUpData>, CosmosCleanUpDataRepository>();
+	builder.Services.AddSingleton<IRepository<PaymentManager>, PaymentRepo>();
+	builder.Services.AddSingleton<IDiscordService>(_ => discordService);
+	builder.Services.AddSingleton<IEmailService>(_ => new EmailService(emailPassword));
+}
+
 builder.Services.AddSingleton<IMessengerService, MessengerService>();
-builder.Services.AddSingleton<IRepository<PaymentManager>, PaymentRepo>();
 builder.Services.AddSingleton<PaymentService>();
 builder.Services.AddSingleton<CleanUpService>();
 builder.Services.AddSingleton<Payment>();
@@ -88,7 +111,6 @@ builder.Services.AddSingleton<CosmosClient>(_ => new CosmosClient(
 															ContractResolver = new PrivateSetterContractResolver()
 														})
 												}));
-builder.Services.AddSingleton<IEmailService>(_ => new EmailService(emailPassword));
 
 // TODO: Remove when rewriting UI
 builder.Services.AddBlazorContextMenu(options =>

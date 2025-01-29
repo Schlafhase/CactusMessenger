@@ -2,6 +2,8 @@
 
 public static class CactusConstants
 {
+	public static string LocalDbRoot { get; } = "db";
+	
 	public static Guid AdminId => Guid.Empty;
 	public static Guid DeletedId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000001");
 	public static Guid AdminChannelId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000002");
