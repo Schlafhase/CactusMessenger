@@ -1,4 +1,5 @@
 <p align="center">
+    <img src="https://img.shields.io/github/repo-size/Schlafhase/CactusMessenger">
     <a href="https://github.com/Schlafhase/CactusMessenger/pulse" alt="Activity">
         <img src="https://img.shields.io/github/commit-activity/m/Schlafhase/CactusMessenger" /></a>
     <a href="https://discord.gg/rRnqzJn6WH">
