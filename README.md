@@ -16,6 +16,9 @@ Cactus Messenger is a free and open-source messenger written in ASP.NET Blazor. 
 # How to use it?
 ## Using my instance
 You can [apply for an account](https://cactusmessenger.azurewebsites.net/createAccount) but I usually only allow people I know to create accounts to prevent spam. 
+### Update: Demo Accounts
+You can now also create a demo account. These accounts can only send up to 15 messages and will be deleted (including all sent messages and created channels) after 15 minutes. I know that you can still abuse this to spam the database so I have to rely on you not 
+spamming. Thank you :)
 ## Hosting your own instance
 First you will need to download my [LocalDB](https://github.com/Schlafhase/Acornbrot.LocalDB) and place the folder in the parent directory of this repo. So for example let's say you have put this repo into a folder called `Cactus`
 ```
