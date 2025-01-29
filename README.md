@@ -1,3 +1,15 @@
+<p align="center">
+    <a href="https://github.com/Schlafhase/CactusMessenger/pulse" alt="Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/Schlafhase/CactusMessenger" /></a>
+    <a href="https://discord.gg/rRnqzJn6WH">
+        <img src="https://img.shields.io/discord/1308518069554905120?logo=discord&logoColor=white"
+            alt="Chat on Discord"></a>
+    <a href="https://github.com/Schlafhase/CactusMessenger/graphs/contributors">
+	<img src="https://img.shields.io/github/contributors/Schlafhase/CactusMessenger"
+	    alt="Contributors">	
+    </a>
+</p>
+
 # What is Cactus Messenger?
 Cactus Messenger is a free and open-source messenger written in ASP.NET Blazor. I started working on it in April 2024 and I am developing it to gain experience. It has also become a kind of insider in my friend group.
 
