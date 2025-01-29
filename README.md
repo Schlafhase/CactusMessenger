@@ -5,6 +5,14 @@ Cactus Messenger is a free and open-source messenger written in ASP.NET Blazor. 
 ## Using my instance
 You can [apply for an account](https://cactusmessenger.azurewebsites.net/createAccount) but I usually only allow people I know to create accounts to prevent spam. 
 ## Hosting your own instance
+First you will need to download my [LocalDB](https://github.com/Schlafhase/Acornbrot.LocalDB) and place the folder in the parent directory of this repo. So for example let's say you have put this repo into a folder called `Cactus`
+```
+Cactus/CactusFrontEnd
+```
+then you will need to put the `Acornbrot.LocalDB` folder into the same parent directory
+```
+Cactus/Acornbrot.LocalDB
+```
 ### Local
 You can host the Messenger using my local database (it's very bad and inefficient but I'll replace it with SQL or MongoDB in the future). You can do this by either making sure you are in a development environment or by replacing the lines 71-96 of `CactusFrontEnd/Program.cs`
 ```cs
