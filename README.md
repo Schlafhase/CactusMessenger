@@ -1,10 +1,34 @@
+<p align="center">
+    <img src="https://img.shields.io/github/repo-size/Schlafhase/CactusMessenger">
+    <a href="https://github.com/Schlafhase/CactusMessenger/pulse" alt="Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/Schlafhase/CactusMessenger" /></a>
+    <a href="https://discord.gg/rRnqzJn6WH">
+        <img src="https://img.shields.io/discord/1308518069554905120?logo=discord&logoColor=white"
+            alt="Chat on Discord"></a>
+    <a href="https://github.com/Schlafhase/CactusMessenger/graphs/contributors">
+	<img src="https://img.shields.io/github/contributors/Schlafhase/CactusMessenger"
+	    alt="Contributors">	
+    </a>
+</p>
+
 # What is Cactus Messenger?
 Cactus Messenger is a free and open-source messenger written in ASP.NET Blazor. I started working on it in April 2024 and I am developing it to gain experience. It has also become a kind of insider in my friend group.
 
 # How to use it?
 ## Using my instance
 You can [apply for an account](https://cactusmessenger.azurewebsites.net/createAccount) but I usually only allow people I know to create accounts to prevent spam. 
+### Update: Demo Accounts
+You can now also create a demo account. These accounts can only send up to 15 messages and will be deleted (including all sent messages and created channels) after 15 minutes. I know that you can still abuse this to spam the database so I have to rely on you not 
+spamming. Thank you :)
 ## Hosting your own instance
+First you will need to download my [LocalDB](https://github.com/Schlafhase/Acornbrot.LocalDB) and place the folder in the parent directory of this repo. So for example let's say you have put this repo into a folder called `Cactus`
+```
+Cactus/CactusMessenger
+```
+then you will need to put the `Acornbrot.LocalDB` folder into the same parent directory
+```
+Cactus/Acornbrot.LocalDB
+```
 ### Local
 You can host the Messenger using my local database (it's very bad and inefficient but I'll replace it with SQL or MongoDB in the future). You can do this by either making sure you are in a development environment or by replacing the lines 71-96 of `CactusFrontEnd/Program.cs`
 ```cs
