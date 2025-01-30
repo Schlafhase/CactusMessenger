@@ -41,6 +41,7 @@ TokenVerification.Initialize();
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
 bool isDevelopment = builder.Environment.IsDevelopment();
+// isDevelopment = false;
 
 builder.Services.AddSingleton<StateProvider>(_ => new StateProvider()
 {

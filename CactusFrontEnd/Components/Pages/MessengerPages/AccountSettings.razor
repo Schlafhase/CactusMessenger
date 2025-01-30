@@ -1,6 +1,10 @@
 ﻿@page "/settings"
 @rendermode InteractiveServer
 @using System.Text.RegularExpressions
+@using System.Drawing
+@using System.Net.Mime
+@using OptimisedImages
+@using MessengerInterfaces
 @using Email
 @inherits AuthorizedPage
 @inject IEmailService emailService
@@ -59,9 +63,26 @@
 	<h2>Account</h2>
 	@if (user is not null)
 	{
+		<p>You are logged in as <b>@user.UserName</b></p>
+		<div>
+			<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg.jpeg,.JPG"
+			           OnChange="updateProfilePicture">
+			</InputFile>
+			<button class="profile-picture-button" onclick="document.querySelector('#fileInput').click()"
+			        style="
+						border: none;
+						background: none">
+					<img
+						alt="Profile Picture"
+						src="@Optimg.GetBase64DataUrl(user.ProfilePicture, "Images/default_profile_picture.png")"/>
+					<div class="profile-picture-overlay">
+						Change
+					</div>
+			</button>
+		</div>
+
 		@if (!string.IsNullOrWhiteSpace(user.Email))
 		{
-			<p>You are logged in as @user.UserName</p>
 			<b>Email: </b>
 
 			@user.Email
@@ -92,6 +113,45 @@
 </div>
 
 <style>
+	.profile-picture-overlay {
+		color: white;
+		font-size: 2rem;
+		padding-top: calc(50% - 1rem);
+		position: relative;
+		width: inherit;
+		height: inherit;
+		border-radius: inherit;
+		background-color: rgba(0, 0, 0, 0.7);
+		opacity: 0;
+		z-index: 2;
+		transition: opacity 0.3s;
+	}
+	
+	.profile-picture-overlay:hover {
+		opacity: 1;
+	}
+	
+	.profile-picture-button {
+		border: none;
+		background: none;
+		padding: 0;
+		width: 15rem;
+		height: 15rem;
+		border-radius: 5%;
+	}
+
+	.profile-picture-button img {
+		width: inherit;
+		height: inherit;
+		border-radius: inherit;
+		position: absolute;
+		transform: translate(-50%);
+	}
+
+	#fileInput {
+		display: none;
+	}
+
 	button {
 		margin: 10px 0;
 	}
@@ -117,6 +177,8 @@
 	private bool emailAlertVisible;
 	private bool invalidEmailAddress;
 	private readonly Regex emailRegex = new(@"(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+
+	private readonly string _inputFileId = Guid.NewGuid().ToString();
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -216,6 +278,22 @@
 	{
 		emailAlertVisible = false;
 		await _dialog.Open();
+	}
+
+	private async Task updateProfilePicture(InputFileChangeEventArgs e)
+	{
+		IBrowserFile img = e.File;
+
+		using MemoryStream ms = new();
+		await img.OpenReadStream(15728640L).CopyToAsync(ms);
+		using Image image = Image.FromStream(ms);
+		(int, int) dimensions = user.IsDemo ? CactusConstants.DemoAccountImageResolution : CactusConstants.StandardImageResolution;
+		Optimg opt = Optimg.FromImage(image, dimensions);
+		string compressedImage = opt.Compress();
+
+		user.ProfilePicture = compressedImage;
+		await messengerService.UpdateProfilePicture(user.Id, compressedImage);
+		await InvokeAsync(StateHasChanged);
 	}
 
 }

@@ -19,5 +19,6 @@ public interface IAccountService
 	Task UpdateAccountLoginStreak(Guid Id, int streak);
 	Task UpdateTotalMessagesSent(Guid Id, int amount);
 	Task UpdateTotalChannelsCreated(Guid Id, int amount);
+	Task UpdateProfilePicture(Guid Id, string? picture);
 	Task DeleteAccount(Guid Id);
 }

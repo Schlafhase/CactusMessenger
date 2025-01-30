@@ -33,17 +33,20 @@
 		<ul>
 			@foreach ((int i, MessageDTO_Output message) in Utils.Enumerate(messages.ToList()))
 			{
+				bool hasHeader = messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > CactusConstants.NewHeaderTimespan;
 				<li class=@(message.AuthorId == user.Id ? "selfSentMessage message" : "message")>
-
+					@if (hasHeader)
+					{
+						<div style="height: 15px"></div>
+					}
 					<ContextMenuTrigger id=@message.Id.ToString()
 					                    MenuId=@(message.AuthorId == user.Id || user.IsAdmin ? "messageContextMenuWithDelete" : "messageContextMenu")>
 						<div class="message-container">
-							@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
+							@if (hasHeader)
 							{
 								<div class="profile-picture">
 									<img alt=""
 									     id="profile-picture-@message.AuthorId"
-									     style="object-fit: cover;"
 									     src="@profilePictureSources.GetValueOrDefault(message.AuthorId, "")"/>
 								</div>
 								
@@ -52,8 +55,8 @@
 							{
 								<div></div>
 							}
-							<div>
-								@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
+							<div class="no-margin no-padding">
+								@if (hasHeader)
 								{
 									<span class="authorName">@message.AuthorName</span>
 
@@ -118,6 +121,14 @@
 </ContextMenu>
 
 <style>
+	.no-margin {
+		margin: 0;
+	}
+	
+	.no-padding {
+		padding: 0;
+	}
+	
 	.chat .message .message-container {
 		display: grid;
 		grid-template-columns: 60px 1fr;
@@ -126,8 +137,9 @@
 	
 	.profile-picture {
 		padding: 0 !important;
-		width: 60px;
-		height: 60px;
+		margin-top: 5px;
+		width: 50px;
+		height: 50px;
 		border-radius: 100%;
 		background-image: url(Images/image_load.png);
 		background-size: cover;
@@ -135,8 +147,8 @@
 	
 	.profile-picture img {
 		padding: 0 !important;
-		width: 60px;
-		height: 60px;
+		width: inherit;
+		height: inherit;
 		object-fit: cover;
 		border-radius: 100%;
 	}
@@ -636,7 +648,7 @@
 					
 					if (message.Content.StartsWith("(img)") && !imageSources.ContainsKey(message.Id))
 					{
-						imageSources[message.Id] = getImage(message.Content);
+						imageSources[message.Id] = getImage(message.Content[5..]);
 						
 						await InvokeAsync(StateHasChanged);
 					}
@@ -645,7 +657,7 @@
 				foreach (Guid profile in profiles.Where(profile => !profilePictureSources.ContainsKey(profile)))
 				{
 					Account account = await messengerService.GetAccount(profile);
-					profilePictureSources[profile] = account.ProfilePicture is not null ? getImage(account.ProfilePicture, true) : "";
+					profilePictureSources[profile] = getImage(account.ProfilePicture, "Images/default_profile_picture.png");
 					await InvokeAsync(StateHasChanged);
 				}
 			});
@@ -702,28 +714,9 @@
 		return newMessage;
 	}
 
-	private static string getImage(string content, bool isProfilePicture = false)
+	private static string getImage(string? content, string defaultValue = "")
 	{
-		try
-		{
-			string data = isProfilePicture ? content : content[5..];
-			Optimg optimg = Optimg.FromString(data);
-			Bitmap img = optimg.ToImage();
-			byte[] bytes;
-
-			using (MemoryStream stream = new())
-			{
-				img.Save(stream, ImageFormat.Png);
-				bytes = stream.ToArray();
-			}
-
-			string b64String = Convert.ToBase64String(bytes);
-			return "data:image/png;base64," + b64String;
-		}
-		catch
-		{
-			return "";
-		}
+		return content is not null ? Optimg.GetBase64DataUrl(content, defaultValue) : defaultValue;
 	}
 
 }

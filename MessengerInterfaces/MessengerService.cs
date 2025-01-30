@@ -601,6 +601,20 @@ public class MessengerService(
 		await accountRepo.Replace(Id, account);
 		logger.Log($"Updated total channels created for account {account.UserName}. New total: {amount}");
 	}
+	
+	public async Task UpdateProfilePicture(Guid Id, string? picture)
+	{
+		using IDisposable _ = await asyncLocker.Enter();
+		await updateProfilePicture(Id, picture);
+	}
+
+	private async Task updateProfilePicture(Guid Id, string? picture)
+	{
+		Account account = await getAccount(Id);
+		account.ProfilePicture = picture;
+		await accountRepo.Replace(Id, account);
+		logger.Log($"Updated profile picture for account {account.UserName}");
+	}
 
 	public async Task<Account> GetAccount(Guid Id)
 	{

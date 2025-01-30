@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Imaging;
 using ColorMine.ColorSpaces;
 using ColorMine.ColorSpaces.Comparisons;
 
@@ -13,6 +14,29 @@ public class Optimg
 	{
 		this.dimensions = dimensions;
 		pixels = Enumerable.Repeat(0, dimensions.Item1 * dimensions.Item2).ToArray();
+	}
+
+	public static string GetBase64DataUrl(string content, string? defaultValue = null)
+	{
+		try
+		{
+			Optimg optimg = Optimg.FromString(content);
+			Bitmap img = optimg.ToImage();
+			byte[] bytes;
+
+			using (MemoryStream stream = new())
+			{
+				img.Save(stream, ImageFormat.Png);
+				bytes = stream.ToArray();
+			}
+
+			string b64String = Convert.ToBase64String(bytes);
+			return "data:image/png;base64," + b64String;
+		}
+		catch (Exception e)
+		{
+			return defaultValue ?? throw e;
+		}
 	}
 
 	public static Color[] Colors { get; } =
