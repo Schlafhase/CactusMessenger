@@ -74,7 +74,7 @@ if (isDevelopment)
 	{
 		Directory.CreateDirectory(CactusConstants.LocalDbRoot);
 	}
-	
+
 	builder.Services.AddSingleton<IRepository<Account>>(_ => new LocalAccountRepository(CactusConstants.LocalDbRoot));
 	builder.Services.AddSingleton<IRepository<Channel>>(_ => new LocalChannelRepository(CactusConstants.LocalDbRoot));
 	builder.Services.AddSingleton<IRepository<Message>>(_ => new LocalMessageRepository(CactusConstants.LocalDbRoot));

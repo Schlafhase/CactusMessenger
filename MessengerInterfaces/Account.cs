@@ -39,6 +39,7 @@ public class Account : ICosmosObject, ILocalObject
 	}
 
 	public string UserName { get; set; }
+	public string? ProfilePicture { get; set; }
 	public string PasswordHash { get; set; }
 	public bool IsAdmin { get; set; }
 	public bool Locked { get; set; }

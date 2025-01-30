@@ -37,38 +37,59 @@
 
 					<ContextMenuTrigger id=@message.Id.ToString()
 					                    MenuId=@(message.AuthorId == user.Id || user.IsAdmin ? "messageContextMenuWithDelete" : "messageContextMenu")>
-						@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
-						{
-							<span class="authorName">@message.AuthorName</span>
-
-							@if (message.AuthorIsAdmin)
+						<div class="message-container">
+							@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
 							{
-								<span class="adminBadge" title="Admin/Developer"></span>
+								<div class="profile-picture">
+									<img alt=""
+									     id="profile-picture-@message.AuthorId"
+									     style="object-fit: cover;"
+									     src="@profilePictureSources.GetValueOrDefault(message.AuthorId, "")"/>
+								</div>
+								
 							}
+							else
+							{
+								<div></div>
+							}
+							<div>
+								@if (messages[i].AuthorId != (i + 1 > messages.Length - 1 ? Guid.Empty : messages[i + 1].AuthorId) || messages[i].DateTime - (i + 1 > messages.Length - 1 ? DateTime.MinValue : messages[i + 1].DateTime) > TimeSpan.FromMinutes(2))
+								{
+									<span class="authorName">@message.AuthorName</span>
 
-							<span class="timestamp"
-							      title=@(message.DateTime.AddHours(timeZoneOffset).ToString())>@Utils.Relativize(message.DateTime.AddHours(timeZoneOffset), DateTime.UtcNow.AddHours(timeZoneOffset))</span>
-							<br/>
-						}
-						@if (message.Content.StartsWith("(img)"))
-						{
-							<div
-								style="background-image: url(Images/image_load.png); width: min(100%, 350px); height: 350px;border-radius:10px; margin-bottom: 10px; padding:0">
-								<img style="width: 100%; height: 100%; padding:0; border-radius:10px" id="@($"img-{message.Id}")" src="@imageSources.GetValueOrDefault(message.Id, "")" alt=""/>
+									@if (message.AuthorIsAdmin)
+									{
+										<span class="adminBadge" title="Admin/Developer"></span>
+									}
+
+									<span class="timestamp"
+									      title=@(message.DateTime.AddHours(timeZoneOffset).ToString())>@Utils.Relativize(message.DateTime.AddHours(timeZoneOffset), DateTime.UtcNow.AddHours(timeZoneOffset))</span>
+									<br/>
+								}
+								@if (message.Content.StartsWith("(img)"))
+								{
+									<div
+										style="background-image: url(Images/image_load.png); width: min(100%, 350px); height: 350px;border-radius:10px; margin-bottom: 10px; padding:0">
+										<img style="width: 100%; height: 100%; padding:0; border-radius:10px"
+										     id="@($"img-{message.Id}")"
+										     src="@imageSources.GetValueOrDefault(message.Id, "")" alt=""/>
+									</div>
+								}
+								else
+								{
+									<div class="messageContent">
+										<span
+											class="messageContent">@((MarkupString)postProcessMessage(message.Content))</span>
+									</div>
+								}
+								@if (getEmbedUrl(message.Content) is not null)
+								{
+									<iframe style="border-radius: 20px;"
+									        src=@getEmbedUrl(message.Content) allowfullscreen>
+									</iframe>
+								}
 							</div>
-						}
-						else
-						{
-							<div class="messageContent">
-								<span class="messageContent">@((MarkupString)postProcessMessage(message.Content))</span>
-							</div>
-						}
-						@if (getEmbedUrl(message.Content) is not null)
-						{
-							<iframe style="border-radius: 20px;"
-							        src=@getEmbedUrl(message.Content) allowfullscreen>
-							</iframe>
-						}
+						</div>
 					</ContextMenuTrigger>
 				</li>
 			}
@@ -97,6 +118,28 @@
 </ContextMenu>
 
 <style>
+	.chat .message .message-container {
+		display: grid;
+		grid-template-columns: 60px 1fr;
+		padding: 0;
+	}
+	
+	.profile-picture {
+		padding: 0 !important;
+		width: 60px;
+		height: 60px;
+		border-radius: 100%;
+		background-image: url(Images/image_load.png);
+		background-size: cover;
+	}
+	
+	.profile-picture img {
+		padding: 0 !important;
+		width: 60px;
+		height: 60px;
+		object-fit: cover;
+		border-radius: 100%;
+	}
 
 	#fileInput::file-selector-button {
 		height: 23px;
@@ -384,6 +427,7 @@
 	readonly Regex urlRegex = new(@"(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:;%_\+.~#?&//=]*))");
 	bool sendDisabled;
 	private readonly Dictionary<Guid, string> imageSources = [];
+	private readonly Dictionary<Guid, string> profilePictureSources = [];
 	private string messageSendError = "";
 
 	private bool _disposed;
@@ -468,6 +512,7 @@
 		{
 			return Task.CompletedTask;
 		}
+
 		imgSelected = true;
 		return Task.CompletedTask;
 	}
@@ -567,6 +612,7 @@
 				imgSelected = false;
 				_inputFileId = Guid.NewGuid().ToString();
 			}
+
 			sendDisabled = false;
 			await InvokeAsync(StateHasChanged);
 		}
@@ -582,13 +628,25 @@
 			{
 				Thread.CurrentThread.IsBackground = true;
 
+				HashSet<Guid> profiles = [];
+
 				foreach (MessageDTO_Output message in messages)
 				{
+					profiles.Add(message.AuthorId);
+					
 					if (message.Content.StartsWith("(img)") && !imageSources.ContainsKey(message.Id))
 					{
 						imageSources[message.Id] = getImage(message.Content);
+						
 						await InvokeAsync(StateHasChanged);
 					}
+				}
+
+				foreach (Guid profile in profiles.Where(profile => !profilePictureSources.ContainsKey(profile)))
+				{
+					Account account = await messengerService.GetAccount(profile);
+					profilePictureSources[profile] = account.ProfilePicture is not null ? getImage(account.ProfilePicture, true) : "";
+					await InvokeAsync(StateHasChanged);
 				}
 			});
 			imageLoadThread.Start();
@@ -644,11 +702,11 @@
 		return newMessage;
 	}
 
-	private static string getImage(string content)
+	private static string getImage(string content, bool isProfilePicture = false)
 	{
 		try
 		{
-			string data = content[5..];
+			string data = isProfilePicture ? content : content[5..];
 			Optimg optimg = Optimg.FromString(data);
 			Bitmap img = optimg.ToImage();
 			byte[] bytes;
@@ -667,4 +725,5 @@
 			return "";
 		}
 	}
+
 }
