@@ -26,11 +26,6 @@ public partial class Transaction : AuthorizedPage
 
 			try
 			{
-				if (!TokenVerification.ValidateToken<PaymentToken>(token))
-				{
-					throw new Exception("The signature is invalid.");
-				}
-				
 				paymentToken = TokenVerification.GetTokenFromString<PaymentToken>(token);
 			}
 			catch (Exception e)

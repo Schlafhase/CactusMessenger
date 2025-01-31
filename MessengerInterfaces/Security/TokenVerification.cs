@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -49,28 +50,26 @@ public static class TokenVerification
 		string tokenAsString = JsonConvert.SerializeObject(token);
 		return verifyData(tokenAsString, signedToken.Signature, PublicKey);
 	}
-
-	public static bool AuthorizeUser(string tokenString, Action action)
-	{
-		//action will be invoked when the user is not authorized
-		if (!ValidateToken<AuthorizationToken>(tokenString))
-		{
-			action.Invoke();
-			return false;
-		}
-
-		return true;
-	}
-
+	
 	/// <summary>
-	/// Retrieves a token from a base64 encoded signed token WITHOUT VALIDATING THE SIGNATURE.
-	/// Use <see cref="TokenVerification.ValidateToken{T}"/> to validate the signature instead.
+	/// Retrieves a <see cref="SignedToken{T}"/> from a base64 encoded signed token.
 	/// </summary>
 	/// <param name="base64EncodedToken">The encoded token</param>
-	/// <typeparam name="T">The <see cref="IToken"/></typeparam>
-	/// <returns></returns>
-	public static SignedToken<T> GetTokenFromString<T>(string base64EncodedToken) where T : IToken
+	/// <param name="validate">Whether the signature should be validated or not</param>
+	/// <typeparam name="T">The type of the encoded <see cref="IToken"/></typeparam>
+	/// <returns>The decoded token as <see cref="SignedToken{T}"/></returns>
+	/// <exception cref="InvalidCredentialException">Throws when the signature is invalid</exception>
+	/// <exception cref="ArgumentNullException">Throws when the token is null</exception>
+	/// <exception cref="FormatException">Throws when the token isn't in a valid base64 format</exception>
+	public static SignedToken<T> GetTokenFromString<T>(string base64EncodedToken, bool validate = true) where T : IToken
 	{
+		ArgumentNullException.ThrowIfNull(base64EncodedToken, nameof(base64EncodedToken));
+		
+		if (validate && !ValidateToken<T>(base64EncodedToken))
+		{
+			throw new InvalidCredentialException("The signature of the token is invalid.");
+		}
+		
 		SignedToken<T> signedToken =
 			JsonConvert.DeserializeObject<SignedToken<T>>(
 				Encoding.UTF8.GetString(Convert.FromBase64String(base64EncodedToken)));

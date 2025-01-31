@@ -39,14 +39,14 @@ else
 	[Inject] private IMessengerService messengerService { get; set; }
 	[Inject] private EventService eventService { get; set; }
 
-	protected override async void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		await refresh();
 		tokenChangeAction = async () => { await refresh(); };
 		eventService.OnTokenChange += tokenChangeAction;
 	}
 
-	public async Task refresh()
+	private async Task refresh()
 	{
 		try
 		{

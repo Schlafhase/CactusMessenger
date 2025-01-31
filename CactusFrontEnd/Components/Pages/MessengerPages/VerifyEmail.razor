@@ -52,24 +52,21 @@
 
 			try
 			{
-				if (TokenVerification.ValidateToken<EmailVerifyToken>(emailToken))
+				SignedToken<EmailVerifyToken> token = TokenVerification.GetTokenFromString<EmailVerifyToken>(emailToken);
+
+				if (token.Token.UserId == user.Id)
 				{
-					SignedToken<EmailVerifyToken> token = TokenVerification.GetTokenFromString<EmailVerifyToken>(emailToken);
-
-					if (token.Token.UserId == user.Id)
-					{
-						await messengerService.EditAccountEmail(token.Token.UserId, token.Token.Email);
-						header = $"The email address {token.Token.Email} was added to your account.";
-					}
-					else
-					{
-						header = "Failed to add email address";
-						errorText = "Access denied.";
-						alertShown = true;
-					}
-
-					await InvokeAsync(StateHasChanged);
+					await messengerService.EditAccountEmail(token.Token.UserId, token.Token.Email);
+					header = $"The email address {token.Token.Email} was added to your account.";
 				}
+				else
+				{
+					header = "Failed to add email address";
+					errorText = "Access denied.";
+					alertShown = true;
+				}
+
+				await InvokeAsync(StateHasChanged);
 			}
 			catch (Exception ex)
 			{

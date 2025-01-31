@@ -172,7 +172,7 @@
 			token = null;
 		}
 
-		if (token is not null && TokenVerification.ValidateToken<AuthorizationToken>(token))
+		if (token is not null)
 		{
 			loggedIn = true;
 			SignedToken<AuthorizationToken> signedToken = TokenVerification.GetTokenFromString<AuthorizationToken>(token);
@@ -181,7 +181,7 @@
 			{
 				user = await messengerService.GetAccount(signedToken.Token.UserId);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				loggedIn = false;
 				channels = [];

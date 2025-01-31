@@ -1,4 +1,5 @@
-﻿using MessengerInterfaces;
+﻿using System.Security.Authentication;
+using MessengerInterfaces;
 using MessengerInterfaces.Security;
 using Microsoft.AspNetCore.Components;
 
@@ -22,16 +23,15 @@ public partial class ResetPasswordEmailRedirect
 			return;
 		}
 
-		if (!TokenVerification.ValidateToken<PasswordResetToken>(_tokenB64))
-		{
-			_text = "The signature of the token is invalid.";
-			await InvokeAsync(StateHasChanged);
-			return;
-		}
-		
 		try
 		{
 			_token = TokenVerification.GetTokenFromString<PasswordResetToken>(_tokenB64);
+		}
+		catch (InvalidCredentialException e)
+		{
+			_text = e.Message;
+			await InvokeAsync(StateHasChanged);
+			return;
 		}
 		catch
 		{

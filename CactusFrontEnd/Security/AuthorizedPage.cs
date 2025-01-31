@@ -86,37 +86,34 @@ public abstract class AuthorizedPage : ComponentBase
 			}
 		}
 
-		if (TokenVerification.AuthorizeUser(tokenString, action))
+		if (!updateStreak)
 		{
-			if (!updateStreak)
-			{
-				return;
-			}
-
-			int daysSinceLastStreakIncrease = (DateTime.UtcNow.Date - user.LastStreakChange.Date).Days;
-
-			switch (daysSinceLastStreakIncrease)
-			{
-				case 1:
-					await messengerService.UpdateAccountLoginStreak(user.Id, user.LoginStreak + 1);
-					user.LoginStreak++;
-					await streakIncrease(user.LoginStreak);
-					break;
-				case > 1:
-					await messengerService.UpdateAccountLoginStreak(user.Id, 1);
-					
-					if (user.LoginStreak > 1)
-					{
-						await streakLost(user.LoginStreak);
-					}
-
-					user.LoginStreak = 1;
-					break;
-			}
-
-			messengerService.UpdateAccountLastLogin(user.Id, DateTime.UtcNow);
-			user.LastLogin = DateTime.UtcNow;
+			return;
 		}
+
+		int daysSinceLastStreakIncrease = (DateTime.UtcNow.Date - user.LastStreakChange.Date).Days;
+
+		switch (daysSinceLastStreakIncrease)
+		{
+			case 1:
+				await messengerService.UpdateAccountLoginStreak(user.Id, user.LoginStreak + 1);
+				user.LoginStreak++;
+				await streakIncrease(user.LoginStreak);
+				break;
+			case > 1:
+				await messengerService.UpdateAccountLoginStreak(user.Id, 1);
+
+				if (user.LoginStreak > 1)
+				{
+					await streakLost(user.LoginStreak);
+				}
+
+				user.LoginStreak = 1;
+				break;
+		}
+
+		messengerService.UpdateAccountLastLogin(user.Id, DateTime.UtcNow);
+		user.LastLogin = DateTime.UtcNow;
 	}
 
 	protected virtual async Task streakIncrease(int newStreak)
