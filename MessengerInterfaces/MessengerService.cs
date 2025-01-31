@@ -318,7 +318,7 @@ public class MessengerService(
 
 			if (author.IsDemo)
 			{
-				if (author.TotalMessagesSent >= CactusConstants.DemoAccountMaxMessageCount)
+				if (author.TotalChannelsCreated >= CactusConstants.DemoAccountMaxChannelCount)
 				{
 					throw new InvalidOperationException("Demo account has reached the maximum channel count");
 				}

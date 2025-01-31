@@ -1,41 +1,24 @@
 ﻿using CactusFrontEnd.Security;
 using Email;
+using MessengerInterfaces;
 using Microsoft.AspNetCore.Components;
 
 namespace CactusFrontEnd.Components.Pages.MessengerPages;
 
-// TODO: Implement resetPasswordEmailRedirect page
-
-public partial class ResetPassword : AuthorizedPage
+public partial class ResetPassword
 {
 	[Inject]
-	IEmailService emailService { get; set; }
+	private IEmailService _emailService { get; set; }
+	[Inject]
+	private IMessengerService _messengerService { get; set; }
+	private string _username;
+	private string _usernameError { get; set; }
 	private string _newPassword = "";
 	private string _errorString = "";
-	private bool _disabled = false;
-	private bool _finished = false;
-	private bool _showPassword = false;
-	
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			// ReSharper disable once StringLiteralTypo
-			await Initialize(() => navigationManager.NavigateTo("/logout?redirectUrl=messenger/resetpassword"));
-			
-			if (user is null)
-			{
-				return;
-			}
-
-			if (string.IsNullOrWhiteSpace(user.Email))
-			{
-				_disabled = true;
-				_errorString = "You need to have an email address to reset your password";
-				await InvokeAsync(StateHasChanged);
-			}
-		}
-	}
+	private bool _noEmail;
+	private bool _disabled;
+	private bool _finished;
+	private bool _showPassword;
 	
 	private async Task reset()
 	{
@@ -45,9 +28,33 @@ public partial class ResetPassword : AuthorizedPage
 			await InvokeAsync(StateHasChanged);
 			return;
 		}
-		
-		_disabled = true;
-		emailService.Send(user.Email!, "Reset Password", EmailService.GeneratePasswordResetEmail(_newPassword, user.Id));
+		_errorString = "";
+
+		Account user;
+
+		try
+		{
+			user = await _messengerService.GetAccountByUsername(_username);
+		}
+		catch
+		{
+			_usernameError = "User not found";
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+
+		if (user.Email is string email)
+		{
+
+			_disabled = true;
+			_emailService.Send(user.Email!, "Reset Password",
+							   EmailService.GeneratePasswordResetEmail(_newPassword, user.Id));
+		}
+		else
+		{
+			_noEmail = true;
+		}
+
 		_finished = true;
 		await InvokeAsync(StateHasChanged);
 	}

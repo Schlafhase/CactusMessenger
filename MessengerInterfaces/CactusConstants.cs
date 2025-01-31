@@ -15,11 +15,13 @@ public static class CactusConstants
 	public static Guid CleanUpDataId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000007");
 
 	public static string AuthTokenKey => "CactusMessengerAuthToken";
-	
+	public static TimeSpan PasswordResetTokenLifetime { get; } = TimeSpan.FromMinutes(10);
+
 	public static (int, int) StandardImageResolution { get; } = (300, 300);
 	
 	public static TimeSpan DemoAccountLifetime { get; } = TimeSpan.FromMinutes(15);
 	public static int DemoAccountMaxMessageCount => 15;
+	public static int DemoAccountMaxChannelCount => 2;
 	public static (int, int) DemoAccountImageResolution { get; } = (100, 100);
 	public static TimeSpan CleanUpFrequency { get; } = TimeSpan.FromMinutes(10);
 	
