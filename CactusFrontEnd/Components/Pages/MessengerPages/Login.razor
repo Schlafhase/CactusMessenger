@@ -19,7 +19,8 @@
 	       style="background: url('Images/@(showPassword ? "eye-icon.svg" : "eye-blind-icon.svg")') no-repeat; background-size: 20px;"
 	       @onclick="@(() => showPassword = !showPassword)"/><br/>
 	<input class="btn-cactus primary" type="submit" value="Login"><span
-		class="errorSpan">@(errorString != "" ? $" - {errorString}" : "")</span>
+		                                                              class="errorSpan">@(errorString != "" ? $" - {errorString}" : "")</span>
+	<a href="resetPassword">Forgot your password?</a>
 </form>
 
 <style>
