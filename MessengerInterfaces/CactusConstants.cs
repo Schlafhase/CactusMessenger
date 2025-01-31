@@ -14,6 +14,7 @@ public static class CactusConstants
 	public static Guid PaymentManagerId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000006");
 	public static Guid CleanUpDataId { get; } = Guid.Parse("00000000-0000-0000-0000-000000000007");
 
+	public static string DemoAccountCreatedKey ="CactusMessengerDemoAccountCreated";
 	public static string AuthTokenKey => "CactusMessengerAuthToken";
 	public static TimeSpan PasswordResetTokenLifetime { get; } = TimeSpan.FromMinutes(10);
 

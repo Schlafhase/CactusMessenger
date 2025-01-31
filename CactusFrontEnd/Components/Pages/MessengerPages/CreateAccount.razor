@@ -122,16 +122,24 @@
 		}
 		catch (KeyNotFoundException)
 		{
-			if (username.Length < 3)
+			if (demo)
 			{
-				errorString = "Username must be at least 3 characters long";
-				return;
+				ProtectedBrowserStorageResult<bool> demoAccountCreated = await ProtectedLocalStore.GetAsync<bool>(CactusConstants.DemoAccountCreatedKey);
+				if (demoAccountCreated is { Success: true, Value: true })
+				{
+					errorString = "You can only create one demo account.";
+					return;
+				}
 			}
-
-			if (username.Length > 40)
+			
+			switch (username.Length)
 			{
-				errorString = "Username can only be 40 characters long.";
-				return;
+				case < 3:
+					errorString = "Username must be at least 3 characters long";
+					return;
+				case > 40:
+					errorString = "Username can only be 40 characters long.";
+					return;
 			}
 
 			if (password.Length < 4)
@@ -179,6 +187,7 @@
 				user = await messengerService.GetAccountByUsername(username);
 				AuthorizationToken token = new(user.Id, DateTime.UtcNow);
 				string tokenString = TokenVerification.GetTokenString(token);
+				await ProtectedLocalStore.SetAsync(CactusConstants.DemoAccountCreatedKey, true);
 				await ProtectedLocalStore.SetAsync(CactusConstants.AuthTokenKey, tokenString);
 				eventService.TokenHasChanged();
 				navigationManager.NavigateTo(RedirectUrl ?? "/");

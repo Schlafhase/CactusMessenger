@@ -99,7 +99,7 @@
 		</ul>
 		<div id="messageInput">
 			<form @onsubmit="@send">
-				<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg.jpeg,.JPG" OnChange="loadImage"
+				<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg,.JPG" OnChange="loadImage"
 				           @oncancel="aborted" style="transform: translate(0.5rem, 0);"></InputFile>
 				<span style="float: right; color: red; font-style: italic;">@messageSendError</span>
 				<input

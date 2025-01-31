@@ -65,7 +65,7 @@
 	{
 		<p>You are logged in as <b>@user.UserName</b></p>
 		<div>
-			<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg.jpeg,.JPG"
+			<InputFile id="fileInput" @key="@(_inputFileId)" accept=".png,.jpg,.JPG"
 			           OnChange="updateProfilePicture">
 			</InputFile>
 			<button class="profile-picture-button" onclick="document.querySelector('#fileInput').click()"
@@ -286,7 +286,7 @@
 
 		using MemoryStream ms = new();
 		await img.OpenReadStream(15728640L).CopyToAsync(ms);
-		using Image image = Image.FromStream(ms);
+		using Image image = Image.FromStream(ms, true, true);
 		(int, int) dimensions = user.IsDemo ? CactusConstants.DemoAccountImageResolution : CactusConstants.StandardImageResolution;
 		Optimg opt = Optimg.FromImage(image, dimensions);
 		string compressedImage = opt.Compress();

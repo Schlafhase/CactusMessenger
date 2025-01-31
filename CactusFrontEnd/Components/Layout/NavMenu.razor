@@ -172,7 +172,7 @@
 			token = null;
 		}
 
-		if (token is not null)
+		if (token is not null && TokenVerification.ValidateToken<AuthorizationToken>(token))
 		{
 			loggedIn = true;
 			SignedToken<AuthorizationToken> signedToken = TokenVerification.GetTokenFromString<AuthorizationToken>(token);

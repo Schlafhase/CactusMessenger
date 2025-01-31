@@ -22,6 +22,13 @@ public partial class ResetPasswordEmailRedirect
 			return;
 		}
 
+		if (!TokenVerification.ValidateToken<PasswordResetToken>(_tokenB64))
+		{
+			_text = "The signature of the token is invalid.";
+			await InvokeAsync(StateHasChanged);
+			return;
+		}
+		
 		try
 		{
 			_token = TokenVerification.GetTokenFromString<PasswordResetToken>(_tokenB64);
@@ -32,6 +39,7 @@ public partial class ResetPasswordEmailRedirect
 			await InvokeAsync(StateHasChanged);
 			return;
 		}
+		
 		
 		if (DateTime.UtcNow - _token.Token.IssuingDate > CactusConstants.PasswordResetTokenLifetime)
 		{

@@ -62,6 +62,13 @@ public static class TokenVerification
 		return true;
 	}
 
+	/// <summary>
+	/// Retrieves a token from a base64 encoded signed token WITHOUT VALIDATING THE SIGNATURE.
+	/// Use <see cref="TokenVerification.ValidateToken{T}"/> to validate the signature instead.
+	/// </summary>
+	/// <param name="base64EncodedToken">The encoded token</param>
+	/// <typeparam name="T">The <see cref="IToken"/></typeparam>
+	/// <returns></returns>
 	public static SignedToken<T> GetTokenFromString<T>(string base64EncodedToken) where T : IToken
 	{
 		SignedToken<T> signedToken =
