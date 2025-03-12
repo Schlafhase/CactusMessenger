@@ -65,4 +65,4 @@ You can also try to host an own instance of the messenger by cloning the repo an
 * And finally `privateKey.privkey` and `publicKey.pubkey` - These two files contain a valid RSA key pair
 
 # Contribute
-There are a lot of bugs in Cactus Messenger so if you find some, feel free to open an issue or submit a pull request. You can also [contact me](https://schlafhase.uk) if you'd like to discuss about this project (or anything else).
+There are a lot of bugs in Cactus Messenger so if you find some, feel free to open an issue or submit a pull request. You can also [contact me](https://schlafhase.uk#contact) if you'd like to discuss about this project (or anything else).
